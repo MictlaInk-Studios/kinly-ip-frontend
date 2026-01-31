@@ -1,19 +1,33 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabaseClient'
+import { useAuth } from '../lib/authContext'
 
 export default function Dashboard() {
+  const { user, loading: authLoading } = useAuth()
+  const router = useRouter()
   const [ips, setIps] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    fetchIPs()
-  }, [])
+    if (!authLoading && !user) {
+      router.push('/auth')
+      return
+    }
+    if (user) {
+      fetchIPs()
+    }
+  }, [user, authLoading])
 
   const fetchIPs = async () => {
     setLoading(true)
-    const { data, error: err } = await supabase.from('ips').select('*').order('created_at', { ascending: false })
+    const { data, error: err } = await supabase
+      .from('ips')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
     setLoading(false)
     if (err) {
       setError(err.message)
@@ -32,11 +46,26 @@ export default function Dashboard() {
     setIps(ips.filter(ip => ip.id !== id))
   }
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push('/auth')
+  }
+
+  if (authLoading) return <p style={{padding:40}}>Loading...</p>
+  if (!user) return null
+
   return (
     <div style={{padding:40,fontFamily:'sans-serif',maxWidth:1000}}>
       <h1>IP Dashboard</h1>
+      <p style={{fontSize:'0.9em',color:'#666'}}>Logged in as: {user.email}</p>
       <p>
-        <Link href="/">Home</Link> | <Link href="/create-ip">Create New IP</Link>
+        <Link href="/">Home</Link> | <Link href="/create-ip">Create New IP</Link> | 
+        <button 
+          onClick={handleLogout}
+          style={{background:'none',border:'none',color:'blue',cursor:'pointer',textDecoration:'underline',marginLeft:4}}
+        >
+          Logout
+        </button>
       </p>
       {error && <div style={{color:'red',marginBottom:12}}>Error: {error}</div>}
       {loading && <p>Loading...</p>}
