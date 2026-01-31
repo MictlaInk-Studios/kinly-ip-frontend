@@ -19,13 +19,13 @@ export default function Auth() {
       if (isSignUp) {
         const { data, error } = await supabase.auth.signUp({
           email,
-          password,
-          options: { emailRedirectTo: `${window.location.origin}/auth-confirm` }
+          password
         })
         if (error) throw error
-        setMessage({ type: 'success', text: 'Check your email to confirm signup.' })
+        setMessage({ type: 'success', text: 'Signup successful! You can now login.' })
         setEmail('')
         setPassword('')
+        setIsSignUp(false)
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
