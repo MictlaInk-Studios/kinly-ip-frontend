@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Link from 'next/link'
 import { supabase } from '../lib/supabaseClient'
 
 export default function CreateIP() {
@@ -29,6 +30,9 @@ export default function CreateIP() {
   return (
     <div style={{padding:40,fontFamily:'sans-serif',maxWidth:700}}>
       <h1>Create IP</h1>
+      <p>
+        <Link href="/">Home</Link> | <Link href="/dashboard">Dashboard</Link>
+      </p>
       <form onSubmit={handleSubmit}>
         <div style={{marginBottom:12}}>
           <label>Title</label><br />
