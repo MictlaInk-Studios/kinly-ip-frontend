@@ -416,40 +416,42 @@ export default function IPBuilder() {
   if (!ip) return <p>IP not found</p>
 
   return (
-    <>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+    <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', paddingTop: '20px' }}>
         <div>
-          <h1>{ip.title}</h1>
-          <p className="text-muted">IP Builder & World Creator</p>
+          <h1 style={{ marginBottom: '8px' }}>{ip.title}</h1>
+          <p className="text-muted" style={{ fontSize: '15px' }}>IP Builder & World Creator</p>
         </div>
         <Link href="/dashboard" style={{ textDecoration: 'none' }}>
-          <button className="btn-secondary">← Back to Dashboard</button>
+          <button className="btn-secondary" style={{ padding: '10px 20px', border: '1px solid #ddd', borderRadius: '6px', background: 'white' }}>
+            ← Back to Dashboard
+          </button>
         </Link>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
         {/* IP Details Card */}
-        <div className="content-card">
-          <h2>IP Details</h2>
+        <div className="content-card" style={{ maxWidth: '100%', padding: '24px' }}>
+          <h2 style={{ marginBottom: '20px', fontSize: '22px', fontWeight: '700' }}>IP Details</h2>
           {!editing ? (
             <>
-              <div style={{ marginBottom: '12px' }}>
-                <p className="text-muted">Title</p>
-                <p style={{ fontSize: '16px', fontWeight: '600' }}>{ip.title}</p>
-              </div>
-              <div style={{ marginBottom: '12px' }}>
-                <p className="text-muted">Owner</p>
-                <p style={{ fontSize: '16px' }}>{ip.owner}</p>
+              <div style={{ marginBottom: '20px' }}>
+                <p className="text-muted" style={{ marginBottom: '6px', fontSize: '13px', fontWeight: '500' }}>Title</p>
+                <p style={{ fontSize: '17px', fontWeight: '600', color: '#1a1a1a', margin: 0 }}>{ip.title}</p>
               </div>
               <div style={{ marginBottom: '20px' }}>
-                <p className="text-muted">Description</p>
-                <p>{ip.description}</p>
+                <p className="text-muted" style={{ marginBottom: '6px', fontSize: '13px', fontWeight: '500' }}>Owner</p>
+                <p style={{ fontSize: '15px', color: '#495057', margin: 0 }}>{ip.owner}</p>
               </div>
-              <div style={{ marginBottom: '12px' }}>
-                <p className="text-muted">Created</p>
-                <p>{new Date(ip.created_at).toLocaleDateString()}</p>
+              <div style={{ marginBottom: '20px' }}>
+                <p className="text-muted" style={{ marginBottom: '6px', fontSize: '13px', fontWeight: '500' }}>Description</p>
+                <p style={{ fontSize: '14px', color: '#495057', lineHeight: '1.6', margin: 0, whiteSpace: 'pre-wrap' }}>{ip.description}</p>
               </div>
-              <button className="btn-primary" onClick={() => setEditing(true)}>
+              <div style={{ marginBottom: '24px', paddingBottom: '20px', borderBottom: '1px solid #e9ecef' }}>
+                <p className="text-muted" style={{ marginBottom: '6px', fontSize: '13px', fontWeight: '500' }}>Created</p>
+                <p style={{ fontSize: '14px', color: '#868e96', margin: 0 }}>{new Date(ip.created_at).toLocaleDateString()}</p>
+              </div>
+              <button className="btn-primary" onClick={() => setEditing(true)} style={{ padding: '10px 20px', fontSize: '14px', fontWeight: '600' }}>
                 Edit IP
               </button>
             </>
@@ -482,9 +484,9 @@ export default function IPBuilder() {
                     required
                   />
                 </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <button type="submit" className="btn-primary">Save</button>
-                  <button type="button" className="btn-secondary" onClick={() => setEditing(false)}>Cancel</button>
+                <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
+                  <button type="submit" className="btn-primary" style={{ padding: '10px 20px', fontSize: '14px', fontWeight: '600' }}>Save</button>
+                  <button type="button" className="btn-secondary" onClick={() => setEditing(false)} style={{ padding: '10px 20px', fontSize: '14px', border: '1px solid #ddd', borderRadius: '6px', background: 'white' }}>Cancel</button>
                 </div>
               </form>
             </>
@@ -492,14 +494,14 @@ export default function IPBuilder() {
         </div>
 
         {/* World Builder */}
-        <div className="content-card">
+        <div className="content-card" style={{ maxWidth: '100%', padding: '24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <h2>🌍 World Builder</h2>
+            <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '700' }}>🌍 World Builder</h2>
             {worlds.length > 0 ? (
               <button 
                 className="btn-primary" 
                 onClick={() => setCreatingWorld(true)}
-                style={{ fontSize: '14px', padding: '8px 16px' }}
+                style={{ fontSize: '14px', padding: '10px 20px', fontWeight: '600' }}
               >
                 Add New World
               </button>
@@ -507,7 +509,7 @@ export default function IPBuilder() {
               <button 
                 className="btn-primary" 
                 onClick={() => setCreatingWorld(true)}
-                style={{ fontSize: '14px', padding: '8px 16px' }}
+                style={{ fontSize: '14px', padding: '10px 20px', fontWeight: '600' }}
               >
                 Create New World
               </button>
@@ -515,15 +517,15 @@ export default function IPBuilder() {
           </div>
 
           {creatingWorld && (
-            <div style={{ marginBottom: '20px', padding: '16px', background: '#f8f9fa', borderRadius: '8px' }}>
-              <div className="form-group">
-                <label>World Name</label>
+            <div style={{ marginBottom: '20px', padding: '20px', background: '#f8f9fa', borderRadius: '8px', border: '1px solid #e9ecef' }}>
+              <div className="form-group" style={{ marginBottom: '16px' }}>
+                <label style={{ marginBottom: '8px' }}>World Name</label>
                 <input
                   type="text"
                   value={worldName}
                   onChange={e => setWorldName(e.target.value)}
                   placeholder="Enter world name"
-                  style={{ marginBottom: '10px' }}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px' }}
                 />
               </div>
               <div style={{ display: 'flex', gap: '10px' }}>
@@ -531,6 +533,7 @@ export default function IPBuilder() {
                   className="btn-primary" 
                   onClick={handleCreateWorld}
                   disabled={!worldName.trim()}
+                  style={{ padding: '10px 20px', fontSize: '14px', fontWeight: '600' }}
                 >
                   Create
                 </button>
@@ -540,6 +543,7 @@ export default function IPBuilder() {
                     setCreatingWorld(false)
                     setWorldName('')
                   }}
+                  style={{ padding: '10px 20px', fontSize: '14px', border: '1px solid #ddd', borderRadius: '6px', background: 'white' }}
                 >
                   Cancel
                 </button>
@@ -549,15 +553,15 @@ export default function IPBuilder() {
 
           {worlds.length > 0 && (
             <>
-              <div className="form-group" style={{ marginBottom: '20px' }}>
-                <label>Select World</label>
+              <div className="form-group" style={{ marginBottom: '16px' }}>
+                <label style={{ marginBottom: '8px', display: 'block' }}>Select World</label>
                 <select
                   value={selectedWorld?.id || ''}
                   onChange={e => {
                     const world = worlds.find(w => w.id === e.target.value)
                     setSelectedWorld(world)
                   }}
-                  style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px', background: 'white', cursor: 'pointer' }}
                 >
                   {worlds.map(world => (
                     <option key={world.id} value={world.id}>
@@ -585,37 +589,42 @@ export default function IPBuilder() {
 
       {/* Content Editor Card - Only show when a section is selected */}
       {selectedWorld && selectedSection && (
-        <div className="content-card" style={{ marginBottom: '20px' }}>
-          <h2>{selectedSection}</h2>
-          <p className="text-muted" style={{ marginBottom: '20px' }}>
-            Building: <strong>{selectedWorld.name}</strong>
-          </p>
+        <div className="content-card" style={{ maxWidth: '100%', padding: '28px', marginBottom: '24px' }}>
+          <div style={{ marginBottom: '24px', paddingBottom: '16px', borderBottom: '2px solid #e9ecef' }}>
+            <h2 style={{ marginBottom: '8px', fontSize: '24px', fontWeight: '700' }}>{selectedSection}</h2>
+            <p className="text-muted" style={{ fontSize: '14px', margin: 0 }}>
+              Building: <strong style={{ color: '#0066cc' }}>{selectedWorld.name}</strong>
+            </p>
+          </div>
 
           {/* Create New Item Form */}
-          <div style={{ marginBottom: '30px', padding: '20px', background: '#f8f9fa', borderRadius: '8px' }}>
-            <h4 style={{ marginBottom: '15px' }}>Add New {selectedSection} Item</h4>
-            <div className="form-group">
-              <label>Title</label>
+          <div style={{ marginBottom: '32px', padding: '24px', background: '#f8f9fa', borderRadius: '8px', border: '1px solid #e9ecef' }}>
+            <h4 style={{ marginBottom: '20px', fontSize: '18px', fontWeight: '600' }}>Add New {selectedSection} Item</h4>
+            <div className="form-group" style={{ marginBottom: '16px' }}>
+              <label style={{ marginBottom: '8px', display: 'block' }}>Title</label>
               <input
                 type="text"
                 value={newItemTitle}
                 onChange={e => setNewItemTitle(e.target.value)}
                 placeholder={`Enter ${selectedSection.toLowerCase()} title`}
+                style={{ width: '100%', padding: '10px 12px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px' }}
               />
             </div>
-            <div className="form-group">
-              <label>Content</label>
+            <div className="form-group" style={{ marginBottom: '20px' }}>
+              <label style={{ marginBottom: '8px', display: 'block' }}>Content</label>
               <textarea
                 value={newItemBody}
                 onChange={e => setNewItemBody(e.target.value)}
                 placeholder={`Enter ${selectedSection.toLowerCase()} content`}
-                rows={4}
+                rows={6}
+                style={{ width: '100%', padding: '10px 12px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px', fontFamily: 'inherit', resize: 'vertical' }}
               />
             </div>
             <button 
               className="btn-primary" 
               onClick={handleCreateItem}
               disabled={!newItemTitle.trim()}
+              style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '600' }}
             >
               Add Item
             </button>
@@ -626,95 +635,131 @@ export default function IPBuilder() {
             <p>Loading items...</p>
           ) : itemsError ? (
             <p className="message message-error">Error: {itemsError}</p>
-          ) : items.length === 0 ? (
-            <p className="text-muted">No {selectedSection.toLowerCase()} items yet. Create one above.</p>
-          ) : (
-            <div>
-              <h4 style={{ marginBottom: '15px' }}>Existing Items</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                {items.map(item => (
-                  <div 
-                    key={item.id} 
-                    style={{ 
-                      padding: '15px', 
-                      background: 'white', 
-                      border: '1px solid #e0e0e0', 
-                      borderRadius: '6px' 
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '10px' }}>
-                      <h5 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>{item.title}</h5>
-                      <button
-                        className="btn-danger"
-                        onClick={() => handleDeleteItem(item.id)}
-                        style={{ fontSize: '12px', padding: '5px 10px' }}
+              ) : items.length === 0 ? (
+                <div style={{ padding: '40px', textAlign: 'center', background: '#f8f9fa', borderRadius: '8px', border: '1px dashed #dee2e6' }}>
+                  <p className="text-muted" style={{ fontSize: '14px', margin: 0 }}>No {selectedSection.toLowerCase()} items yet. Create one above.</p>
+                </div>
+              ) : (
+                <div>
+                  <h4 style={{ marginBottom: '20px', fontSize: '18px', fontWeight: '600' }}>Existing Items ({items.length})</h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {items.map(item => (
+                      <div 
+                        key={item.id} 
+                        style={{ 
+                          padding: '20px', 
+                          background: 'white', 
+                          border: '1px solid #e9ecef', 
+                          borderRadius: '8px',
+                          boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                          transition: 'box-shadow 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)'}
+                        onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)'}
                       >
-                        Delete
-                      </button>
-                    </div>
-                    {item.body && (
-                      <p style={{ margin: 0, color: '#666', whiteSpace: 'pre-wrap' }}>{item.body}</p>
-                    )}
-                    <p className="text-muted" style={{ marginTop: '10px', fontSize: '12px' }}>
-                      Created: {new Date(item.created_at).toLocaleDateString()}
-                    </p>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '12px' }}>
+                          <h5 style={{ margin: 0, fontSize: '17px', fontWeight: '600', color: '#1a1a1a' }}>{item.title}</h5>
+                          <button
+                            className="btn-danger"
+                            onClick={() => handleDeleteItem(item.id)}
+                            style={{ fontSize: '12px', padding: '6px 12px', borderRadius: '4px' }}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                        {item.body && (
+                          <p style={{ margin: '0 0 12px 0', color: '#495057', whiteSpace: 'pre-wrap', lineHeight: '1.6', fontSize: '14px' }}>{item.body}</p>
+                        )}
+                        <p className="text-muted" style={{ margin: 0, fontSize: '12px', color: '#868e96' }}>
+                          Created: {new Date(item.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                </div>
+              )}
         </div>
       )}
 
       {/* Content Sections - Only show when a world is selected */}
       {selectedWorld && (
-        <div className="content-card">
-          <h2>Content Sections</h2>
-          <p className="text-muted" style={{ marginBottom: '20px' }}>
-            Select a section to start building your world
-          </p>
+        <div className="content-card" style={{ maxWidth: '100%', padding: '28px' }}>
+          <div style={{ marginBottom: '24px', paddingBottom: '16px', borderBottom: '2px solid #e9ecef' }}>
+            <h2 style={{ marginBottom: '8px', fontSize: '24px', fontWeight: '700' }}>Content Sections</h2>
+            <p className="text-muted" style={{ fontSize: '14px', margin: 0 }}>
+              Select a section to start building your world
+            </p>
+          </div>
 
           {/* Section Categories with Collapsible Sections */}
           <div>
             {Object.entries(SECTION_CATEGORIES).map(([category, sections]) => (
-              <div key={category} style={{ marginBottom: '15px' }}>
+              <div key={category} style={{ marginBottom: '12px' }}>
                 <button
                   onClick={() => toggleCategory(category)}
                   style={{
                     width: '100%',
-                    padding: '12px 16px',
+                    padding: '14px 18px',
                     background: expandedCategories[category] ? '#e9ecef' : '#f8f9fa',
-                    border: '1px solid #dee2e6',
-                    borderRadius: '6px',
+                    border: `1px solid ${expandedCategories[category] ? '#dee2e6' : '#e9ecef'}`,
+                    borderRadius: '8px',
                     cursor: 'pointer',
                     textAlign: 'left',
-                    fontSize: '16px',
+                    fontSize: '15px',
                     fontWeight: '600',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    marginBottom: '8px'
+                    marginBottom: '8px',
+                    transition: 'all 0.2s',
+                    color: '#1a1a1a'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!expandedCategories[category]) {
+                      e.currentTarget.style.background = '#e9ecef'
+                      e.currentTarget.style.borderColor = '#dee2e6'
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!expandedCategories[category]) {
+                      e.currentTarget.style.background = '#f8f9fa'
+                      e.currentTarget.style.borderColor = '#e9ecef'
+                    }
                   }}
                 >
                   <span>{category}</span>
-                  <span>{expandedCategories[category] ? '▼' : '▶'}</span>
+                  <span style={{ fontSize: '12px', color: '#868e96' }}>{expandedCategories[category] ? '▼' : '▶'}</span>
                 </button>
                 {expandedCategories[category] && (
-                  <div style={{ paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <div style={{ paddingLeft: '24px', display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '8px' }}>
                     {sections.map(section => (
                       <button
                         key={section}
                         onClick={() => handleSelectSection(section)}
-                        className={selectedSection === section ? 'btn-primary' : 'btn-secondary'}
                         style={{
-                          padding: '8px 16px',
-                          borderRadius: '4px',
-                          border: 'none',
+                          padding: '10px 16px',
+                          borderRadius: '6px',
+                          border: selectedSection === section ? '1px solid #0066cc' : '1px solid #e9ecef',
                           cursor: 'pointer',
                           fontSize: '14px',
                           fontWeight: selectedSection === section ? '600' : '400',
                           textAlign: 'left',
-                          width: '100%'
+                          width: '100%',
+                          background: selectedSection === section ? '#e7f3ff' : 'white',
+                          color: selectedSection === section ? '#0066cc' : '#495057',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (selectedSection !== section) {
+                            e.currentTarget.style.background = '#f8f9fa'
+                            e.currentTarget.style.borderColor = '#dee2e6'
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (selectedSection !== section) {
+                            e.currentTarget.style.background = 'white'
+                            e.currentTarget.style.borderColor = '#e9ecef'
+                          }
                         }}
                       >
                         {section}
@@ -727,6 +772,6 @@ export default function IPBuilder() {
           </div>
         </div>
       )}
-    </>
+    </div>
   )
 }
