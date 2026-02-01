@@ -10,6 +10,7 @@ export default function IPBuilder() {
   const { user, loading: authLoading } = useAuth()
   const [ip, setIp] = useState(null)
   const [worlds, setWorlds] = useState([])
+  const SECTIONS = ['Characters', 'Locations', 'Plot', 'Lore', 'Timeline', 'Media']
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [editing, setEditing] = useState(false)
@@ -17,6 +18,11 @@ export default function IPBuilder() {
   const [worldName, setWorldName] = useState('')
   const [selectedWorld, setSelectedWorld] = useState(null)
   const [formData, setFormData] = useState({ title: '', description: '', owner: '' })
+  const [selectedSection, setSelectedSection] = useState(null)
+  const [items, setItems] = useState([])
+  const [newItemTitle, setNewItemTitle] = useState('')
+  const [newItemBody, setNewItemBody] = useState('')
+  const [itemsLoading, setItemsLoading] = useState(false)
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -67,8 +73,15 @@ export default function IPBuilder() {
     setWorlds(data || [])
     if (data && data.length > 0) {
       setSelectedWorld(data[0])
+      // auto-open the first section for usability (for non-technical users)
+      if (!selectedSection) setSelectedSection(SECTIONS[0])
     }
   }
+
+  // when the selected world changes (eg user selects a different world), auto-open the first section
+  useEffect(() => {
+    if (selectedWorld) setSelectedSection(SECTIONS[0])
+  }, [selectedWorld])
 
   const handleSaveIP = async () => {
     const { error: err } = await supabase
@@ -116,6 +129,78 @@ export default function IPBuilder() {
       console.error('Unexpected error:', e)
       alert('Error creating world: ' + e.message)
     }
+  }
+
+  // Content items: fetch/create/delete per section
+  const fetchItems = async (section) => {
+    if (!selectedWorld || !section) return
+    setItemsLoading(true)
+    const { data, error: err } = await supabase
+      .from('content_items')
+      .select('*')
+      .eq('world_id', selectedWorld.id)
+      .eq('section', section)
+      .order('created_at', { ascending: false })
+
+    setItemsLoading(false)
+    if (err) {
+      console.error('Error fetching content items:', err)
+      return
+    }
+    setItems(data || [])
+  }
+
+  useEffect(() => {
+    if (selectedSection) fetchItems(selectedSection)
+  }, [selectedSection, selectedWorld])
+
+  const handleCreateItem = async () => {
+    if (!newItemTitle.trim()) {
+      alert('Please enter a title')
+      return
+    }
+    try {
+      const { data, error: err } = await supabase
+        .from('content_items')
+        .insert([{
+          title: newItemTitle,
+          body: newItemBody,
+          section: selectedSection,
+          world_id: selectedWorld.id,
+          ip_id: id,
+          user_id: user.id
+        }])
+        .select()
+
+      if (err) {
+        console.error('Create item error:', err)
+        alert('Error: ' + err.message)
+        return
+      }
+
+      const newItem = data[0]
+      setItems([newItem, ...items])
+      setNewItemTitle('')
+      setNewItemBody('')
+    } catch (e) {
+      console.error('Unexpected error creating item:', e)
+      alert('Error creating item: ' + e.message)
+    }
+  }
+
+  const handleDeleteItem = async (itemId) => {
+    if (!confirm('Delete this item?')) return
+    const { error: err } = await supabase
+      .from('content_items')
+      .delete()
+      .eq('id', itemId)
+
+    if (err) {
+      console.error('Delete item error:', err)
+      alert('Error: ' + err.message)
+      return
+    }
+    setItems(items.filter(i => i.id !== itemId))
   }
 
   if (authLoading) return <p>Loading...</p>
@@ -241,23 +326,30 @@ export default function IPBuilder() {
             <>
               <div style={{ marginBottom: '16px' }}>
                 <p className="text-muted">Active World</p>
-                <p style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>{selectedWorld?.name}</p>
-                <button className="btn-secondary" style={{ width: '100%' }} onClick={() => setCreatingWorld(true)}>
-                  + Create Another World
-                </button>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
+                  <p style={{ fontSize: '16px', fontWeight: '600', margin: 0 }}>{selectedWorld?.name}</p>
+                  <button className="btn-secondary" onClick={() => { navigator.clipboard?.writeText(selectedWorld?.id || '').then(()=>alert('World ID copied')) }}>Copy ID</button>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button className="btn-secondary" style={{ flex: 1 }} onClick={() => setCreatingWorld(true)}>
+                    + Create Another World
+                  </button>
+                </div>
               </div>
               {worlds.length > 1 && (
                 <div>
                   <p className="text-muted" style={{ fontSize: '12px', marginBottom: '8px' }}>Other worlds:</p>
                   {worlds.map(world => (
-                    <button
-                      key={world.id}
-                      className="btn-secondary"
-                      onClick={() => setSelectedWorld(world)}
-                      style={{ width: '100%', marginBottom: '6px', textAlign: 'left' }}
-                    >
-                      {world.name}
-                    </button>
+                    <div key={world.id} style={{ display: 'flex', gap: '8px', marginBottom: '6px' }}>
+                      <button
+                        className="btn-secondary"
+                        onClick={() => setSelectedWorld(world)}
+                        style={{ flex: 1, textAlign: 'left' }}
+                      >
+                        {world.name}
+                      </button>
+                      <button className="btn-secondary" onClick={() => { navigator.clipboard?.writeText(world.id).then(()=>alert('World ID copied')) }}>Copy ID</button>
+                    </div>
                   ))}
                 </div>
               )}
@@ -271,32 +363,108 @@ export default function IPBuilder() {
         <div className="content-card">
           <h2>📝 Content Sections — {selectedWorld.name}</h2>
           <p className="text-muted">Organize and manage content for this world</p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px', marginTop: '20px' }}>
-            {['Characters', 'Locations', 'Plot', 'Lore', 'Timeline', 'Media'].map(section => (
-              <div
-                key={section}
-                style={{
-                  padding: '16px',
-                  background: '#f8f9fa',
-                  borderRadius: '6px',
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.background = '#e9ecef'
-                  e.currentTarget.style.transform = 'translateY(-2px)'
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.background = '#f8f9fa'
-                  e.currentTarget.style.transform = 'translateY(0)'
-                }}
-              >
-                <p style={{ fontWeight: '600', marginBottom: '4px' }}>{section}</p>
-                <p className="text-muted" style={{ fontSize: '12px' }}>0 items</p>
+
+            {/* Verification / Debug panel for non-technical users */}
+            <div style={{ marginTop: '12px', padding: '10px', background: '#fff7e6', borderRadius: '6px', border: '1px solid #ffe7b2' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <strong>Current World ID:</strong> <span style={{ fontFamily: 'monospace' }}>{selectedWorld.id}</span>
+                  <br />
+                  <strong>Your User ID:</strong> <span style={{ fontFamily: 'monospace' }}>{user.id}</span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button className="btn-secondary" onClick={() => fetchItems(selectedSection)}>Refresh Items</button>
+                  <button className="btn-secondary" onClick={() => { navigator.clipboard?.writeText(selectedWorld.id).then(()=>alert('World ID copied')) }}>Copy World ID</button>
+                </div>
               </div>
-            ))}
-          </div>
+              <div style={{ marginTop: '8px' }}>
+                <small className="text-muted">Use "Refresh Items" to verify what the database currently stores for the selected section.</small>
+              </div>
+            </div>
+
+          {/* If a section is selected, show focused editor */}
+          {selectedSection ? (
+            <div style={{ marginTop: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                <h3 style={{ margin: 0 }}>{selectedSection}</h3>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button className="btn-secondary" onClick={() => setSelectedSection(null)}>← All Sections</button>
+                </div>
+              </div>
+
+              <div style={{ marginBottom: '12px' }}>
+                <p className="text-muted">Items</p>
+                {itemsLoading ? (
+                  <p>Loading items...</p>
+                ) : (
+                  <div>
+                    {items.length === 0 ? <p className="text-muted">No items yet</p> : (
+                      <ul style={{ paddingLeft: '18px' }}>
+                        {items.map(item => (
+                          <li key={item.id} style={{ marginBottom: '8px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <div>
+                                <strong>{item.title}</strong>
+                                {item.body ? <div className="text-muted" style={{ fontSize: '13px' }}>{item.body}</div> : null}
+                              </div>
+                              <div style={{ display: 'flex', gap: '8px' }}>
+                                <button className="btn-secondary" onClick={() => navigator.clipboard?.writeText(item.id).then(()=>alert('ID copied'))}>Copy ID</button>
+                                <button className="btn-danger" onClick={() => handleDeleteItem(item.id)}>Delete</button>
+                              </div>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div style={{ marginTop: '12px' }}>
+                <p className="text-muted">Add New {selectedSection.slice(0, -1)}</p>
+                <div className="form-group">
+                  <label>Title</label>
+                  <input value={newItemTitle} onChange={e => setNewItemTitle(e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label>Body</label>
+                  <textarea value={newItemBody} onChange={e => setNewItemBody(e.target.value)} />
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button className="btn-primary" onClick={handleCreateItem}>Add</button>
+                  <button className="btn-secondary" onClick={() => { setNewItemTitle(''); setNewItemBody('') }}>Clear</button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px', marginTop: '20px' }}>
+              {SECTIONS.map(section => (
+                <div
+                  key={section}
+                  style={{
+                    padding: '16px',
+                    background: '#f8f9fa',
+                    borderRadius: '6px',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                  }}
+                  onClick={() => setSelectedSection(section)}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background = '#e9ecef'
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background = '#f8f9fa'
+                    e.currentTarget.style.transform = 'translateY(0)'
+                  }}
+                >
+                  <p style={{ fontWeight: '600', marginBottom: '4px' }}>{section}</p>
+                  <p className="text-muted" style={{ fontSize: '12px' }}>{/* count could go here */}items</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </>
