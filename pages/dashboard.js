@@ -89,7 +89,7 @@ export default function Dashboard() {
             </thead>
             <tbody>
               {ips.map(ip => (
-                <tr key={ip.id}>
+                <tr key={ip.id} style={{cursor: 'pointer'}} onClick={() => router.push(`/builder/${ip.id}`)}>
                   <td><strong>{ip.title}</strong></td>
                   <td>{ip.owner}</td>
                   <td>{ip.description?.substring(0, 50)}{ip.description?.length > 50 ? '...' : ''}</td>
@@ -97,7 +97,10 @@ export default function Dashboard() {
                   <td style={{textAlign: 'center'}}>
                     <button 
                       className="btn-danger"
-                      onClick={() => deleteIP(ip.id)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        deleteIP(ip.id)
+                      }}
                     >
                       Delete
                     </button>
