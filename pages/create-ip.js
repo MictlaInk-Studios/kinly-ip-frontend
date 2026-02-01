@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../lib/authContext'
@@ -36,55 +35,66 @@ export default function CreateIP() {
       setMessage({ type: 'error', text: error.message })
       return
     }
-    setMessage({ type: 'success', text: 'IP created successfully.' })
+    setMessage({ type: 'success', text: 'IP created successfully!' })
     setTitle('')
     setDescription('')
     setOwner('')
+    setTimeout(() => router.push('/dashboard'), 1000)
   }
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push('/auth')
-  }
-
-  if (authLoading) return <p style={{padding:40}}>Loading...</p>
+  if (authLoading) return <p>Loading...</p>
   if (!user) return null
 
   return (
-    <div style={{padding:40,fontFamily:'sans-serif',maxWidth:700}}>
-      <h1>Create IP</h1>
-      <p style={{fontSize:'0.9em',color:'#666'}}>Logged in as: {user.email}</p>
-      <p>
-        <Link href="/">Home</Link> | <Link href="/dashboard">Dashboard</Link> | 
-        <button 
-          onClick={handleLogout}
-          style={{background:'none',border:'none',color:'blue',cursor:'pointer',textDecoration:'underline',marginLeft:4}}
-        >
-          Logout
-        </button>
-      </p>
-      <form onSubmit={handleSubmit}>
-        <div style={{marginBottom:12}}>
-          <label>Title</label><br />
-          <input value={title} onChange={e=>setTitle(e.target.value)} required style={{width:'100%'}} />
-        </div>
-        <div style={{marginBottom:12}}>
-          <label>Description</label><br />
-          <textarea value={description} onChange={e=>setDescription(e.target.value)} required style={{width:'100%',minHeight:120}} />
-        </div>
-        <div style={{marginBottom:12}}>
-          <label>Owner</label><br />
-          <input value={owner} onChange={e=>setOwner(e.target.value)} required style={{width:'100%'}} />
-        </div>
-        <div>
-          <button type="submit" disabled={loading}>{loading ? 'Saving...' : 'Create IP'}</button>
-        </div>
-      </form>
-      {message && (
-        <div style={{marginTop:12,color: message.type === 'error' ? 'red' : 'green'}}>
-          {message.text}
-        </div>
-      )}
-    </div>
+    <>
+      <h1>Create New IP</h1>
+      <p className="text-muted">Add a new intellectual property to your portfolio</p>
+
+      <div className="content-card" style={{maxWidth: '600px', marginTop: '30px'}}>
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Title *</label>
+            <input 
+              type="text"
+              value={title} 
+              onChange={e=>setTitle(e.target.value)} 
+              required 
+              placeholder="e.g. Innovative Algorithm Design"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Description *</label>
+            <textarea 
+              value={description} 
+              onChange={e=>setDescription(e.target.value)} 
+              required 
+              placeholder="Describe your IP..."
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Owner *</label>
+            <input 
+              type="text"
+              value={owner} 
+              onChange={e=>setOwner(e.target.value)} 
+              required 
+              placeholder="Your name or company"
+            />
+          </div>
+
+          <button type="submit" className="btn-primary" disabled={loading} style={{width: '100%'}}>
+            {loading ? 'Creating...' : 'Create IP'}
+          </button>
+        </form>
+
+        {message && (
+          <div className={`message message-${message.type}`}>
+            {message.text}
+          </div>
+        )}
+      </div>
+    </>
   )
 }

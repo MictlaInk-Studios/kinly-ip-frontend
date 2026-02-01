@@ -37,7 +37,7 @@ export default function Dashboard() {
   }
 
   const deleteIP = async (id) => {
-    if (!confirm('Delete this IP?')) return
+    if (!confirm('Are you sure you want to delete this IP?')) return
     const { error: err } = await supabase.from('ips').delete().eq('id', id)
     if (err) {
       alert('Error: ' + err.message)
@@ -46,52 +46,61 @@ export default function Dashboard() {
     setIps(ips.filter(ip => ip.id !== id))
   }
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push('/auth')
-  }
-
-  if (authLoading) return <p style={{padding:40}}>Loading...</p>
+  if (authLoading) return <p>Loading...</p>
   if (!user) return null
 
   return (
-    <div style={{padding:40,fontFamily:'sans-serif',maxWidth:1000}}>
-      <h1>IP Dashboard</h1>
-      <p style={{fontSize:'0.9em',color:'#666'}}>Logged in as: {user.email}</p>
-      <p>
-        <Link href="/">Home</Link> | <Link href="/create-ip">Create New IP</Link> | 
-        <button 
-          onClick={handleLogout}
-          style={{background:'none',border:'none',color:'blue',cursor:'pointer',textDecoration:'underline',marginLeft:4}}
-        >
-          Logout
-        </button>
-      </p>
-      {error && <div style={{color:'red',marginBottom:12}}>Error: {error}</div>}
-      {loading && <p>Loading...</p>}
-      {!loading && ips.length === 0 && <p>No IPs yet. <Link href="/create-ip">Create one</Link></p>}
-      {!loading && ips.length > 0 && (
+    <>
+      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
         <div>
-          <p>{ips.length} IP(s) found</p>
-          <table style={{width:'100%',borderCollapse:'collapse',marginTop:12}}>
+          <h1>Your IPs</h1>
+          <p className="text-muted">{ips.length} IP{ips.length !== 1 ? 's' : ''} in your portfolio</p>
+        </div>
+        <Link href="/create-ip" style={{textDecoration: 'none'}}>
+          <button className="btn-primary">+ Create New IP</button>
+        </Link>
+      </div>
+
+      {error && <div className="message message-error">{error}</div>}
+
+      {loading && <p>Loading your IPs...</p>}
+
+      {!loading && ips.length === 0 && (
+        <div className="content-card" style={{textAlign: 'center', padding: '40px'}}>
+          <h2 style={{fontSize: '20px', marginBottom: '12px'}}>No IPs Yet</h2>
+          <p className="text-muted">Get started by creating your first intellectual property.</p>
+          <Link href="/create-ip">
+            <button className="btn-primary" style={{marginTop: '12px'}}>Create Your First IP</button>
+          </Link>
+        </div>
+      )}
+
+      {!loading && ips.length > 0 && (
+        <div style={{background: 'white', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.08)'}}>
+          <table>
             <thead>
-              <tr style={{borderBottom:'2px solid #ccc'}}>
-                <th style={{textAlign:'left',padding:8}}>Title</th>
-                <th style={{textAlign:'left',padding:8}}>Description</th>
-                <th style={{textAlign:'left',padding:8}}>Owner</th>
-                <th style={{textAlign:'left',padding:8}}>Created</th>
-                <th style={{textAlign:'center',padding:8}}>Action</th>
+              <tr>
+                <th>Title</th>
+                <th>Owner</th>
+                <th>Description</th>
+                <th>Created</th>
+                <th style={{textAlign: 'center'}}>Action</th>
               </tr>
             </thead>
             <tbody>
               {ips.map(ip => (
-                <tr key={ip.id} style={{borderBottom:'1px solid #eee'}}>
-                  <td style={{padding:8}}>{ip.title}</td>
-                  <td style={{padding:8}}>{ip.description}</td>
-                  <td style={{padding:8}}>{ip.owner}</td>
-                  <td style={{padding:8,fontSize:'0.9em'}}>{new Date(ip.created_at).toLocaleDateString()}</td>
-                  <td style={{textAlign:'center',padding:8}}>
-                    <button onClick={() => deleteIP(ip.id)} style={{background:'#ff4444',color:'white',border:'none',padding:'4px 12px',cursor:'pointer'}}>Delete</button>
+                <tr key={ip.id}>
+                  <td><strong>{ip.title}</strong></td>
+                  <td>{ip.owner}</td>
+                  <td>{ip.description?.substring(0, 50)}{ip.description?.length > 50 ? '...' : ''}</td>
+                  <td>{new Date(ip.created_at).toLocaleDateString()}</td>
+                  <td style={{textAlign: 'center'}}>
+                    <button 
+                      className="btn-danger"
+                      onClick={() => deleteIP(ip.id)}
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -99,6 +108,7 @@ export default function Dashboard() {
           </table>
         </div>
       )}
-    </div>
+    </>
   )
+}
 }

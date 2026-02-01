@@ -43,49 +43,53 @@ export default function Login() {
   }
 
   return (
-    <div style={{padding:40,fontFamily:'sans-serif',maxWidth:500,margin:'0 auto'}}>
-      <h1>{isSignUp ? 'Sign Up' : 'Login'}</h1>
-      <form onSubmit={handleAuth}>
-        <div style={{marginBottom:12}}>
-          <label>Email</label><br />
-          <input 
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            required
-            style={{width:'100%'}}
-          />
-        </div>
-        <div style={{marginBottom:12}}>
-          <label>Password</label><br />
-          <input 
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-            style={{width:'100%'}}
-          />
-        </div>
-        <div style={{marginBottom:12}}>
-          <button type="submit" disabled={loading}>
+    <div style={{minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)'}}>
+      <div className="content-card" style={{width: '100%', maxWidth: '400px'}}>
+        <h1 className="text-center">{isSignUp ? 'Create Account' : 'Login'}</h1>
+        <p className="text-center text-muted">Kinly IP Creation Platform</p>
+
+        <form onSubmit={handleAuth}>
+          <div className="form-group">
+            <label>Email</label>
+            <input 
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+              placeholder="your@email.com"
+            />
+          </div>
+          <div className="form-group">
+            <label>Password</label>
+            <input 
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+              placeholder="••••••••"
+            />
+          </div>
+          <button type="submit" className="btn-primary" disabled={loading} style={{width: '100%'}}>
             {loading ? 'Loading...' : (isSignUp ? 'Sign Up' : 'Login')}
           </button>
-        </div>
-      </form>
-      {message && (
-        <div style={{marginTop:12,color: message.type === 'error' ? 'red' : 'green'}}>
-          {message.text}
-        </div>
-      )}
-      <p style={{marginTop:20}}>
-        {isSignUp ? 'Already have an account? ' : 'No account? '}
-        <button 
-          onClick={() => setIsSignUp(!isSignUp)}
-          style={{background:'none',border:'none',color:'blue',cursor:'pointer',textDecoration:'underline'}}
-        >
-          {isSignUp ? 'Login' : 'Sign Up'}
-        </button>
-      </p>
+        </form>
+
+        {message && (
+          <div className={`message message-${message.type}`}>
+            {message.text}
+          </div>
+        )}
+
+        <p className="text-center" style={{marginTop: '20px', fontSize: '14px'}}>
+          {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
+          <button 
+            className="btn-secondary"
+            onClick={() => setIsSignUp(!isSignUp)}
+          >
+            {isSignUp ? 'Login' : 'Sign Up'}
+          </button>
+        </p>
+      </div>
     </div>
   )
 }
