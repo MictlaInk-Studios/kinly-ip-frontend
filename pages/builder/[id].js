@@ -231,7 +231,7 @@ export default function IPBuilder() {
         </Link>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px', marginBottom: '20px' }}>
         {/* IP Details Card */}
         <div className="content-card">
           <h2>IP Details</h2>
@@ -294,18 +294,6 @@ export default function IPBuilder() {
             </>
           )}
         </div>
-
-        {/* World Builder (removed) */}
-        <div className="content-card">
-          <h2>🌍 World Builder (removed)</h2>
-          <p className="text-muted">The world builder UI has been removed to rebuild from scratch. New builder will be implemented here.</p>
-        </div>
-      </div>
-
-      {/* Builder removed — placeholder for new implementation */}
-      <div className="content-card">
-        <h2>Builder Removed</h2>
-        <p className="text-muted">World builder and content sections have been cleared. We'll rebuild this area from scratch.</p>
       </div>
     </>
   )
