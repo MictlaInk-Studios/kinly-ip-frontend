@@ -1,36 +1,40 @@
+import { useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 import { useAuth } from '../lib/authContext'
 import { supabase } from '../lib/supabaseClient'
-import { useRouter } from 'next/router'
 
 export default function Home() {
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
   const router = useRouter()
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login')
+    }
+  }, [user, loading])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    router.push('/auth')
+    router.push('/login')
   }
 
+  if (loading) return <p style={{padding:40}}>Loading...</p>
+  if (!user) return null
+
   return (
-    <div style={{padding:40,fontFamily:'sans-serif'}}>
-      <h1>Kinly — IP Creation</h1>
-      <p>A minimal frontend sample for IP creation using Supabase.</p>
-      {user ? (
-        <p>
-          <Link href="/create-ip">Create an IP</Link> | <Link href="/dashboard">Dashboard</Link> |
-          <button 
-            onClick={handleLogout}
-            style={{background:'none',border:'none',color:'blue',cursor:'pointer',textDecoration:'underline',marginLeft:4}}
-          >
-            Logout
-          </button>
-        </p>
-      ) : (
-        <p>
-          <Link href="/auth">Login / Sign Up</Link>
-        </p>
-      )}
+    <div style={{padding:40,fontFamily:'sans-serif',maxWidth:1000}}>
+      <h1>Kinly — IP Creation Dashboard</h1>
+      <p style={{fontSize:'0.9em',color:'#666'}}>Logged in as: {user.email}</p>
+      <p>
+        <Link href="/create-ip">Create New IP</Link> | <Link href="/dashboard">View All IPs</Link> | 
+        <button 
+          onClick={handleLogout}
+          style={{background:'none',border:'none',color:'blue',cursor:'pointer',textDecoration:'underline',marginLeft:4}}
+        >
+          Logout
+        </button>
+      </p>
     </div>
   )
 }

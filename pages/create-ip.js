@@ -15,7 +15,7 @@ export default function CreateIP() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push('/auth')
+      router.push('/login')
     }
   }, [user, authLoading])
 
