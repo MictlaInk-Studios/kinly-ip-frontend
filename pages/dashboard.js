@@ -51,14 +51,19 @@ export default function Dashboard() {
 
   return (
     <>
-      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
+      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px'}}>
         <div>
           <h1>Your IPs</h1>
           <p className="text-muted">{ips.length} IP{ips.length !== 1 ? 's' : ''} in your portfolio</p>
         </div>
-        <Link href="/create-ip" style={{textDecoration: 'none'}}>
-          <button className="btn-primary">+ Create New IP</button>
-        </Link>
+        <div style={{display: 'flex', gap: '12px'}}>
+          <Link href="/" style={{textDecoration: 'none'}}>
+            <button className="btn-secondary">← Home</button>
+          </Link>
+          <Link href="/create-ip" style={{textDecoration: 'none'}}>
+            <button className="btn-primary">+ Create New IP</button>
+          </Link>
+        </div>
       </div>
 
       {error && <div className="message message-error">{error}</div>}
