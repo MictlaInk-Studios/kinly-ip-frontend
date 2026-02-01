@@ -9,9 +9,13 @@ export default function IPBuilder() {
   const { id } = router.query
   const { user, loading: authLoading } = useAuth()
   const [ip, setIp] = useState(null)
+  const [worlds, setWorlds] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [editing, setEditing] = useState(false)
+  const [creatingWorld, setCreatingWorld] = useState(false)
+  const [worldName, setWorldName] = useState('')
+  const [selectedWorld, setSelectedWorld] = useState(null)
   const [formData, setFormData] = useState({ title: '', description: '', owner: '' })
 
   useEffect(() => {
@@ -21,6 +25,7 @@ export default function IPBuilder() {
     }
     if (id && user) {
       fetchIP()
+      fetchWorlds()
     }
   }, [id, user, authLoading])
 
@@ -46,7 +51,23 @@ export default function IPBuilder() {
     })
   }
 
-  const handleSave = async () => {
+  const fetchWorlds = async () => {
+    const { data, error: err } = await supabase
+      .from('worlds')
+      .select('*')
+      .eq('ip_id', id)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+
+    if (!err) {
+      setWorlds(data || [])
+      if (data && data.length > 0) {
+        setSelectedWorld(data[0])
+      }
+    }
+  }
+
+  const handleSaveIP = async () => {
     const { error: err } = await supabase
       .from('ips')
       .update(formData)
@@ -59,6 +80,33 @@ export default function IPBuilder() {
     setIp({ ...ip, ...formData })
     setEditing(false)
     alert('IP updated successfully!')
+  }
+
+  const handleCreateWorld = async () => {
+    if (!worldName.trim()) {
+      alert('Please enter a world name')
+      return
+    }
+
+    const { data, error: err } = await supabase
+      .from('worlds')
+      .insert([{
+        name: worldName,
+        ip_id: id,
+        user_id: user.id
+      }])
+      .select()
+
+    if (err) {
+      alert('Error: ' + err.message)
+      return
+    }
+
+    const newWorld = data[0]
+    setWorlds([newWorld, ...worlds])
+    setSelectedWorld(newWorld)
+    setWorldName('')
+    setCreatingWorld(false)
   }
 
   if (authLoading) return <p>Loading...</p>
@@ -107,7 +155,7 @@ export default function IPBuilder() {
             </>
           ) : (
             <>
-              <form onSubmit={e => { e.preventDefault(); handleSave() }}>
+              <form onSubmit={e => { e.preventDefault(); handleSaveIP() }}>
                 <div className="form-group">
                   <label>Title</label>
                   <input
@@ -146,50 +194,102 @@ export default function IPBuilder() {
         {/* World Builder Card */}
         <div className="content-card">
           <h2>🌍 World Builder</h2>
-          <p className="text-muted">Create and manage worlds for this IP</p>
-          <div style={{ marginTop: '20px', padding: '20px', background: '#f8f9fa', borderRadius: '6px', textAlign: 'center' }}>
-            <p style={{ marginBottom: '12px' }}>No worlds created yet</p>
-            <button className="btn-primary" style={{ width: '100%' }}>
-              + Create World
-            </button>
-          </div>
-          <div style={{ marginTop: '20px', fontSize: '12px', color: '#666' }}>
-            <p>💡 Tip: Create multiple worlds to expand your IP universe</p>
-          </div>
+          {worlds.length === 0 && !creatingWorld ? (
+            <>
+              <p className="text-muted">Create and manage worlds for this IP</p>
+              <div style={{ marginTop: '20px', padding: '20px', background: '#f8f9fa', borderRadius: '6px', textAlign: 'center' }}>
+                <p style={{ marginBottom: '12px' }}>No worlds created yet</p>
+                <button className="btn-primary" style={{ width: '100%' }} onClick={() => setCreatingWorld(true)}>
+                  + Create World
+                </button>
+              </div>
+            </>
+          ) : creatingWorld ? (
+            <>
+              <p className="text-muted">Create a new world</p>
+              <div style={{ marginTop: '20px' }}>
+                <div className="form-group">
+                  <label>World Name</label>
+                  <input
+                    type="text"
+                    value={worldName}
+                    onChange={e => setWorldName(e.target.value)}
+                    placeholder="e.g. Earth, Middle-earth, Asgard"
+                    autoFocus
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button className="btn-primary" onClick={handleCreateWorld} style={{ flex: 1 }}>
+                    Create
+                  </button>
+                  <button className="btn-secondary" onClick={() => setCreatingWorld(false)}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div style={{ marginBottom: '16px' }}>
+                <p className="text-muted">Active World</p>
+                <p style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>{selectedWorld?.name}</p>
+                <button className="btn-secondary" style={{ width: '100%' }} onClick={() => setCreatingWorld(true)}>
+                  + Create Another World
+                </button>
+              </div>
+              {worlds.length > 1 && (
+                <div>
+                  <p className="text-muted" style={{ fontSize: '12px', marginBottom: '8px' }}>Other worlds:</p>
+                  {worlds.map(world => (
+                    <button
+                      key={world.id}
+                      className="btn-secondary"
+                      onClick={() => setSelectedWorld(world)}
+                      style={{ width: '100%', marginBottom: '6px', textAlign: 'left' }}
+                    >
+                      {world.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
 
-      {/* Content Sections */}
-      <div className="content-card">
-        <h2>📝 Content Sections</h2>
-        <p className="text-muted">Organize and manage IP content</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px', marginTop: '20px' }}>
-          {['Characters', 'Locations', 'Plot', 'Lore', 'Timeline', 'Media'].map(section => (
-            <div
-              key={section}
-              style={{
-                padding: '16px',
-                background: '#f8f9fa',
-                borderRadius: '6px',
-                textAlign: 'center',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.background = '#e9ecef'
-                e.currentTarget.style.transform = 'translateY(-2px)'
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.background = '#f8f9fa'
-                e.currentTarget.style.transform = 'translateY(0)'
-              }}
-            >
-              <p style={{ fontWeight: '600', marginBottom: '4px' }}>{section}</p>
-              <p className="text-muted" style={{ fontSize: '12px' }}>0 items</p>
-            </div>
-          ))}
+      {/* Content Sections - Only show if world is selected */}
+      {selectedWorld && (
+        <div className="content-card">
+          <h2>📝 Content Sections — {selectedWorld.name}</h2>
+          <p className="text-muted">Organize and manage content for this world</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px', marginTop: '20px' }}>
+            {['Characters', 'Locations', 'Plot', 'Lore', 'Timeline', 'Media'].map(section => (
+              <div
+                key={section}
+                style={{
+                  padding: '16px',
+                  background: '#f8f9fa',
+                  borderRadius: '6px',
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = '#e9ecef'
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = '#f8f9fa'
+                  e.currentTarget.style.transform = 'translateY(0)'
+                }}
+              >
+                <p style={{ fontWeight: '600', marginBottom: '4px' }}>{section}</p>
+                <p className="text-muted" style={{ fontSize: '12px' }}>0 items</p>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </>
   )
 }
