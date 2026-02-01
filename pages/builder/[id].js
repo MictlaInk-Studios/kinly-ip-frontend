@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../lib/authContext'
+import SettingsButton from '../../components/SettingsButton'
 
 export default function IPBuilder() {
   const router = useRouter()
@@ -414,11 +415,14 @@ export default function IPBuilder() {
           <h1 style={{ marginBottom: '8px' }}>{ip.title}</h1>
           <p className="text-muted" style={{ fontSize: '15px' }}>IP Builder & World Creator</p>
         </div>
-        <Link href="/dashboard" style={{ textDecoration: 'none' }}>
-          <button className="btn-secondary" style={{ padding: '10px 20px', border: '1px solid #ddd', borderRadius: '6px', background: 'white' }}>
-            ← Back to Dashboard
-          </button>
-        </Link>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <SettingsButton />
+          <Link href="/dashboard" style={{ textDecoration: 'none' }}>
+            <button className="btn-secondary" style={{ padding: '10px 20px', borderRadius: '6px' }}>
+              ← Back to Dashboard
+            </button>
+          </Link>
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
@@ -589,7 +593,7 @@ export default function IPBuilder() {
                   {selectedSection || 'Select a Section'}
                 </h2>
                 <p className="text-muted" style={{ fontSize: '14px', margin: 0 }}>
-                  Building: <strong style={{ color: '#0066cc' }}>{selectedWorld.name}</strong>
+                  Building: <strong style={{ color: 'var(--accent)' }}>{selectedWorld.name}</strong>
                 </p>
               </div>
             </div>
@@ -604,9 +608,10 @@ export default function IPBuilder() {
                   width: '100%',
                   padding: '12px 16px',
                   borderRadius: '6px',
-                  border: '1px solid #ddd',
+                  border: '1px solid var(--input-border)',
                   fontSize: '14px',
-                  background: 'white',
+                  background: 'var(--input-bg)',
+                  color: 'var(--text-primary)',
                   cursor: 'pointer',
                   fontWeight: '500'
                 }}
@@ -628,7 +633,7 @@ export default function IPBuilder() {
           {/* Create New Item Form - Only show when section is selected */}
           {selectedSection && (
             <>
-              <div style={{ marginBottom: '32px', padding: '24px', background: '#f8f9fa', borderRadius: '8px', border: '1px solid #e9ecef' }}>
+              <div style={{ marginBottom: '32px', padding: '24px', background: 'var(--bg-tertiary)', borderRadius: '8px', border: '1px solid var(--border-light)' }}>
                 <h4 style={{ marginBottom: '20px', fontSize: '18px', fontWeight: '600' }}>Add New {selectedSection} Item</h4>
             <div className="form-group" style={{ marginBottom: '16px' }}>
               <label style={{ marginBottom: '8px', display: 'block' }}>Title</label>

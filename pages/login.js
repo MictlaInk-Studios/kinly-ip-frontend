@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabaseClient'
+import SettingsButton from '../components/SettingsButton'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -43,7 +44,10 @@ export default function Login() {
   }
 
   return (
-    <div style={{minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)'}}>
+    <div style={{minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)', position: 'relative'}}>
+      <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
+        <SettingsButton />
+      </div>
       <div className="content-card" style={{width: '100%', maxWidth: '400px'}}>
         <h1 className="text-center">{isSignUp ? 'Create Account' : 'Login'}</h1>
         <p className="text-center text-muted">Kinly IP Creation Platform</p>

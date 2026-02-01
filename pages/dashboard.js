@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../lib/authContext'
+import SettingsButton from '../components/SettingsButton'
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth()
@@ -56,7 +57,8 @@ export default function Dashboard() {
           <h1>Your IPs</h1>
           <p className="text-muted">{ips.length} IP{ips.length !== 1 ? 's' : ''} in your portfolio</p>
         </div>
-        <div style={{display: 'flex', gap: '12px'}}>
+        <div style={{display: 'flex', gap: '12px', alignItems: 'center'}}>
+          <SettingsButton />
           <Link href="/" style={{textDecoration: 'none'}}>
             <button className="btn-secondary">← Home</button>
           </Link>

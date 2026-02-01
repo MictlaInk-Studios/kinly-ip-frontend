@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../lib/authContext'
+import SettingsButton from '../components/SettingsButton'
 
 export default function CreateIP() {
   const { user, loading: authLoading } = useAuth()
@@ -47,8 +48,13 @@ export default function CreateIP() {
 
   return (
     <>
-      <h1>Create New IP</h1>
-      <p className="text-muted">Add a new intellectual property to your portfolio</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+        <div>
+          <h1>Create New IP</h1>
+          <p className="text-muted">Add a new intellectual property to your portfolio</p>
+        </div>
+        <SettingsButton />
+      </div>
 
       <div className="content-card" style={{maxWidth: '600px', marginTop: '30px'}}>
         <form onSubmit={handleSubmit}>
