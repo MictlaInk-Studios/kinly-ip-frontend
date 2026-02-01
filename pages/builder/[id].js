@@ -583,16 +583,99 @@ export default function IPBuilder() {
         </div>
       </div>
 
+      {/* Content Editor Card - Only show when a section is selected */}
+      {selectedWorld && selectedSection && (
+        <div className="content-card" style={{ marginBottom: '20px' }}>
+          <h2>{selectedSection}</h2>
+          <p className="text-muted" style={{ marginBottom: '20px' }}>
+            Building: <strong>{selectedWorld.name}</strong>
+          </p>
+
+          {/* Create New Item Form */}
+          <div style={{ marginBottom: '30px', padding: '20px', background: '#f8f9fa', borderRadius: '8px' }}>
+            <h4 style={{ marginBottom: '15px' }}>Add New {selectedSection} Item</h4>
+            <div className="form-group">
+              <label>Title</label>
+              <input
+                type="text"
+                value={newItemTitle}
+                onChange={e => setNewItemTitle(e.target.value)}
+                placeholder={`Enter ${selectedSection.toLowerCase()} title`}
+              />
+            </div>
+            <div className="form-group">
+              <label>Content</label>
+              <textarea
+                value={newItemBody}
+                onChange={e => setNewItemBody(e.target.value)}
+                placeholder={`Enter ${selectedSection.toLowerCase()} content`}
+                rows={4}
+              />
+            </div>
+            <button 
+              className="btn-primary" 
+              onClick={handleCreateItem}
+              disabled={!newItemTitle.trim()}
+            >
+              Add Item
+            </button>
+          </div>
+
+          {/* Items List */}
+          {itemsLoading ? (
+            <p>Loading items...</p>
+          ) : itemsError ? (
+            <p className="message message-error">Error: {itemsError}</p>
+          ) : items.length === 0 ? (
+            <p className="text-muted">No {selectedSection.toLowerCase()} items yet. Create one above.</p>
+          ) : (
+            <div>
+              <h4 style={{ marginBottom: '15px' }}>Existing Items</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                {items.map(item => (
+                  <div 
+                    key={item.id} 
+                    style={{ 
+                      padding: '15px', 
+                      background: 'white', 
+                      border: '1px solid #e0e0e0', 
+                      borderRadius: '6px' 
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '10px' }}>
+                      <h5 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>{item.title}</h5>
+                      <button
+                        className="btn-danger"
+                        onClick={() => handleDeleteItem(item.id)}
+                        style={{ fontSize: '12px', padding: '5px 10px' }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                    {item.body && (
+                      <p style={{ margin: 0, color: '#666', whiteSpace: 'pre-wrap' }}>{item.body}</p>
+                    )}
+                    <p className="text-muted" style={{ marginTop: '10px', fontSize: '12px' }}>
+                      Created: {new Date(item.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Content Sections - Only show when a world is selected */}
       {selectedWorld && (
         <div className="content-card">
           <h2>Content Sections</h2>
           <p className="text-muted" style={{ marginBottom: '20px' }}>
-            Building: <strong>{selectedWorld.name}</strong>
+            Select a section to start building your world
           </p>
 
           {/* Section Categories with Collapsible Sections */}
-          <div style={{ marginBottom: '30px' }}>
+          <div>
             {Object.entries(SECTION_CATEGORIES).map(([category, sections]) => (
               <div key={category} style={{ marginBottom: '15px' }}>
                 <button
@@ -642,86 +725,6 @@ export default function IPBuilder() {
               </div>
             ))}
           </div>
-
-          {/* Selected Section Content */}
-          {selectedSection && (
-            <div>
-              <h3 style={{ marginBottom: '15px' }}>{selectedSection}</h3>
-
-              {/* Create New Item Form */}
-              <div style={{ marginBottom: '30px', padding: '20px', background: '#f8f9fa', borderRadius: '8px' }}>
-                <h4 style={{ marginBottom: '15px' }}>Add New {selectedSection} Item</h4>
-                <div className="form-group">
-                  <label>Title</label>
-                  <input
-                    type="text"
-                    value={newItemTitle}
-                    onChange={e => setNewItemTitle(e.target.value)}
-                    placeholder={`Enter ${selectedSection.toLowerCase()} title`}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Content</label>
-                  <textarea
-                    value={newItemBody}
-                    onChange={e => setNewItemBody(e.target.value)}
-                    placeholder={`Enter ${selectedSection.toLowerCase()} content`}
-                    rows={4}
-                  />
-                </div>
-                <button 
-                  className="btn-primary" 
-                  onClick={handleCreateItem}
-                  disabled={!newItemTitle.trim()}
-                >
-                  Add Item
-                </button>
-              </div>
-
-              {/* Items List */}
-              {itemsLoading ? (
-                <p>Loading items...</p>
-              ) : itemsError ? (
-                <p className="message message-error">Error: {itemsError}</p>
-              ) : items.length === 0 ? (
-                <p className="text-muted">No {selectedSection.toLowerCase()} items yet. Create one above.</p>
-              ) : (
-                <div>
-                  <h4 style={{ marginBottom: '15px' }}>Existing Items</h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                    {items.map(item => (
-                      <div 
-                        key={item.id} 
-                        style={{ 
-                          padding: '15px', 
-                          background: 'white', 
-                          border: '1px solid #e0e0e0', 
-                          borderRadius: '6px' 
-                        }}
-                      >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '10px' }}>
-                          <h5 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>{item.title}</h5>
-                          <button
-                            className="btn-danger"
-                            onClick={() => handleDeleteItem(item.id)}
-                            style={{ fontSize: '12px', padding: '5px 10px' }}
-                          >
-                            Delete
-                          </button>
-                        </div>
-                        {item.body && (
-                          <p style={{ margin: 0, color: '#666', whiteSpace: 'pre-wrap' }}>{item.body}</p>
-                        )}
-                        <p className="text-muted" style={{ marginTop: '10px', fontSize: '12px' }}>
-                          Created: {new Date(item.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
         </div>
       )}
     </>
