@@ -23,6 +23,7 @@ export default function IPBuilder() {
   const [newItemTitle, setNewItemTitle] = useState('')
   const [newItemBody, setNewItemBody] = useState('')
   const [itemsLoading, setItemsLoading] = useState(false)
+  const [itemsError, setItemsError] = useState(null)
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -135,6 +136,8 @@ export default function IPBuilder() {
   const fetchItems = async (section) => {
     if (!selectedWorld || !section) return
     setItemsLoading(true)
+    setItemsError(null)
+    console.log('fetchItems', { section, worldId: selectedWorld?.id })
     const { data, error: err } = await supabase
       .from('content_items')
       .select('*')
@@ -145,6 +148,8 @@ export default function IPBuilder() {
     setItemsLoading(false)
     if (err) {
       console.error('Error fetching content items:', err)
+      setItemsError(err.message || String(err))
+      setItems([])
       return
     }
     setItems(data || [])
@@ -201,6 +206,11 @@ export default function IPBuilder() {
       return
     }
     setItems(items.filter(i => i.id !== itemId))
+  }
+
+  const handleSelectSection = (section) => {
+    console.log('section clicked', section)
+    setSelectedSection(section)
   }
 
   if (authLoading) return <p>Loading...</p>
@@ -371,6 +381,9 @@ export default function IPBuilder() {
                   <strong>Current World ID:</strong> <span style={{ fontFamily: 'monospace' }}>{selectedWorld.id}</span>
                   <br />
                   <strong>Your User ID:</strong> <span style={{ fontFamily: 'monospace' }}>{user.id}</span>
+                  <br />
+                  <strong>Selected Section:</strong> <span style={{ fontFamily: 'monospace' }}>{selectedSection || 'none'}</span>
+                  {itemsError ? (<div style={{ marginTop: '6px' }} className="message message-error">Items error: {itemsError}</div>) : null}
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button className="btn-secondary" onClick={() => fetchItems(selectedSection)}>Refresh Items</button>
@@ -449,7 +462,7 @@ export default function IPBuilder() {
                     cursor: 'pointer',
                     transition: 'all 0.2s',
                   }}
-                  onClick={() => setSelectedSection(section)}
+                  onClick={() => handleSelectSection(section)}
                   onMouseEnter={e => {
                     e.currentTarget.style.background = '#e9ecef'
                     e.currentTarget.style.transform = 'translateY(-2px)'
