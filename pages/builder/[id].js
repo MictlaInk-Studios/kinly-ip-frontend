@@ -59,11 +59,14 @@ export default function IPBuilder() {
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
 
-    if (!err) {
-      setWorlds(data || [])
-      if (data && data.length > 0) {
-        setSelectedWorld(data[0])
-      }
+    if (err) {
+      console.error('Error fetching worlds:', err)
+      return
+    }
+    
+    setWorlds(data || [])
+    if (data && data.length > 0) {
+      setSelectedWorld(data[0])
     }
   }
 
@@ -88,25 +91,31 @@ export default function IPBuilder() {
       return
     }
 
-    const { data, error: err } = await supabase
-      .from('worlds')
-      .insert([{
-        name: worldName,
-        ip_id: id,
-        user_id: user.id
-      }])
-      .select()
+    try {
+      const { data, error: err } = await supabase
+        .from('worlds')
+        .insert([{
+          name: worldName,
+          ip_id: id,
+          user_id: user.id
+        }])
+        .select()
 
-    if (err) {
-      alert('Error: ' + err.message)
-      return
+      if (err) {
+        console.error('Create world error:', err)
+        alert('Error: ' + err.message)
+        return
+      }
+
+      const newWorld = data[0]
+      setWorlds([newWorld, ...worlds])
+      setSelectedWorld(newWorld)
+      setWorldName('')
+      setCreatingWorld(false)
+    } catch (e) {
+      console.error('Unexpected error:', e)
+      alert('Error creating world: ' + e.message)
     }
-
-    const newWorld = data[0]
-    setWorlds([newWorld, ...worlds])
-    setSelectedWorld(newWorld)
-    setWorldName('')
-    setCreatingWorld(false)
   }
 
   if (authLoading) return <p>Loading...</p>
