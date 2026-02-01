@@ -231,7 +231,7 @@ export default function IPBuilder() {
         </Link>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px', marginBottom: '20px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
         {/* IP Details Card */}
         <div className="content-card">
           <h2>IP Details</h2>
@@ -294,7 +294,209 @@ export default function IPBuilder() {
             </>
           )}
         </div>
+
+        {/* World Builder */}
+        <div className="content-card">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h2>🌍 World Builder</h2>
+            {worlds.length > 0 ? (
+              <button 
+                className="btn-primary" 
+                onClick={() => setCreatingWorld(true)}
+                style={{ fontSize: '14px', padding: '8px 16px' }}
+              >
+                Add New World
+              </button>
+            ) : (
+              <button 
+                className="btn-primary" 
+                onClick={() => setCreatingWorld(true)}
+                style={{ fontSize: '14px', padding: '8px 16px' }}
+              >
+                Create New World
+              </button>
+            )}
+          </div>
+
+          {creatingWorld && (
+            <div style={{ marginBottom: '20px', padding: '16px', background: '#f8f9fa', borderRadius: '8px' }}>
+              <div className="form-group">
+                <label>World Name</label>
+                <input
+                  type="text"
+                  value={worldName}
+                  onChange={e => setWorldName(e.target.value)}
+                  placeholder="Enter world name"
+                  style={{ marginBottom: '10px' }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button 
+                  className="btn-primary" 
+                  onClick={handleCreateWorld}
+                  disabled={!worldName.trim()}
+                >
+                  Create
+                </button>
+                <button 
+                  className="btn-secondary" 
+                  onClick={() => {
+                    setCreatingWorld(false)
+                    setWorldName('')
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {worlds.length > 0 && (
+            <>
+              <div className="form-group" style={{ marginBottom: '20px' }}>
+                <label>Select World</label>
+                <select
+                  value={selectedWorld?.id || ''}
+                  onChange={e => {
+                    const world = worlds.find(w => w.id === e.target.value)
+                    setSelectedWorld(world)
+                  }}
+                  style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+                >
+                  {worlds.map(world => (
+                    <option key={world.id} value={world.id}>
+                      {world.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {selectedWorld && (
+                <div>
+                  <p className="text-muted" style={{ marginBottom: '15px' }}>
+                    Selected: <strong>{selectedWorld.name}</strong>
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+
+          {worlds.length === 0 && !creatingWorld && (
+            <p className="text-muted">No worlds created yet. Click "Create New World" to get started.</p>
+          )}
+        </div>
       </div>
+
+      {/* Content Sections - Only show when a world is selected */}
+      {selectedWorld && (
+        <div className="content-card">
+          <h2>Content Sections</h2>
+          <p className="text-muted" style={{ marginBottom: '20px' }}>
+            Building: <strong>{selectedWorld.name}</strong>
+          </p>
+
+          {/* Section Tabs */}
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+            {SECTIONS.map(section => (
+              <button
+                key={section}
+                onClick={() => handleSelectSection(section)}
+                className={selectedSection === section ? 'btn-primary' : 'btn-secondary'}
+                style={{
+                  padding: '10px 20px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: selectedSection === section ? '600' : '400'
+                }}
+              >
+                {section}
+              </button>
+            ))}
+          </div>
+
+          {/* Selected Section Content */}
+          {selectedSection && (
+            <div>
+              <h3 style={{ marginBottom: '15px' }}>{selectedSection}</h3>
+
+              {/* Create New Item Form */}
+              <div style={{ marginBottom: '30px', padding: '20px', background: '#f8f9fa', borderRadius: '8px' }}>
+                <h4 style={{ marginBottom: '15px' }}>Add New {selectedSection} Item</h4>
+                <div className="form-group">
+                  <label>Title</label>
+                  <input
+                    type="text"
+                    value={newItemTitle}
+                    onChange={e => setNewItemTitle(e.target.value)}
+                    placeholder={`Enter ${selectedSection.toLowerCase()} title`}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Content</label>
+                  <textarea
+                    value={newItemBody}
+                    onChange={e => setNewItemBody(e.target.value)}
+                    placeholder={`Enter ${selectedSection.toLowerCase()} content`}
+                    rows={4}
+                  />
+                </div>
+                <button 
+                  className="btn-primary" 
+                  onClick={handleCreateItem}
+                  disabled={!newItemTitle.trim()}
+                >
+                  Add Item
+                </button>
+              </div>
+
+              {/* Items List */}
+              {itemsLoading ? (
+                <p>Loading items...</p>
+              ) : itemsError ? (
+                <p className="message message-error">Error: {itemsError}</p>
+              ) : items.length === 0 ? (
+                <p className="text-muted">No {selectedSection.toLowerCase()} items yet. Create one above.</p>
+              ) : (
+                <div>
+                  <h4 style={{ marginBottom: '15px' }}>Existing Items</h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    {items.map(item => (
+                      <div 
+                        key={item.id} 
+                        style={{ 
+                          padding: '15px', 
+                          background: 'white', 
+                          border: '1px solid #e0e0e0', 
+                          borderRadius: '6px' 
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '10px' }}>
+                          <h5 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>{item.title}</h5>
+                          <button
+                            className="btn-danger"
+                            onClick={() => handleDeleteItem(item.id)}
+                            style={{ fontSize: '12px', padding: '5px 10px' }}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                        {item.body && (
+                          <p style={{ margin: 0, color: '#666', whiteSpace: 'pre-wrap' }}>{item.body}</p>
+                        )}
+                        <p className="text-muted" style={{ marginTop: '10px', fontSize: '12px' }}>
+                          Created: {new Date(item.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </>
   )
 }
