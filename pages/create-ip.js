@@ -2,7 +2,11 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../lib/authContext'
-import SettingsButton from '../components/SettingsButton'
+import Card from '../components/ui/Card'
+import Button from '../components/ui/Button'
+import Input from '../components/ui/Input'
+import Textarea from '../components/ui/Textarea'
+import Link from 'next/link'
 
 export default function CreateIP() {
   const { user, loading: authLoading } = useAuth()
@@ -43,64 +47,77 @@ export default function CreateIP() {
     setTimeout(() => router.push('/dashboard'), 1000)
   }
 
-  if (authLoading) return <p>Loading...</p>
+  if (authLoading) return <div style={{ padding: '40px', textAlign: 'center' }}>Loading...</div>
   if (!user) return null
 
   return (
     <>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-        <div>
-          <h1>Create New IP</h1>
-          <p className="text-muted">Add a new intellectual property to your portfolio</p>
-        </div>
-        <SettingsButton />
+      <div style={{ marginBottom: '32px' }}>
+        <h1 style={{ marginBottom: '8px', fontSize: '32px', fontWeight: '700' }}>Create New IP</h1>
+        <p style={{ fontSize: '16px', color: 'var(--text-secondary)' }}>
+          Add a new intellectual property to your portfolio
+        </p>
       </div>
 
-      <div className="content-card" style={{maxWidth: '600px', marginTop: '30px'}}>
+      <Card style={{ maxWidth: '700px' }}>
         <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Title *</label>
-            <input 
-              type="text"
-              value={title} 
-              onChange={e=>setTitle(e.target.value)} 
-              required 
-              placeholder="e.g. Innovative Algorithm Design"
-            />
-          </div>
+          <Input
+            label="Title"
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="e.g. Innovative Algorithm Design"
+            required
+          />
 
-          <div className="form-group">
-            <label>Description *</label>
-            <textarea 
-              value={description} 
-              onChange={e=>setDescription(e.target.value)} 
-              required 
-              placeholder="Describe your IP..."
-            />
-          </div>
+          <Textarea
+            label="Description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Describe your IP..."
+            required
+            rows={6}
+          />
 
-          <div className="form-group">
-            <label>Owner *</label>
-            <input 
-              type="text"
-              value={owner} 
-              onChange={e=>setOwner(e.target.value)} 
-              required 
-              placeholder="Your name or company"
-            />
-          </div>
+          <Input
+            label="Owner"
+            type="text"
+            value={owner}
+            onChange={(e) => setOwner(e.target.value)}
+            placeholder="Your name or company"
+            required
+          />
 
-          <button type="submit" className="btn-primary" disabled={loading} style={{width: '100%'}}>
-            {loading ? 'Creating...' : 'Create IP'}
-          </button>
+          {message && (
+            <div style={{
+              marginBottom: '20px',
+              padding: '12px 16px',
+              borderRadius: '8px',
+              background: message.type === 'success' ? 'rgba(40, 167, 69, 0.1)' : 'rgba(220, 53, 69, 0.1)',
+              border: `1px solid ${message.type === 'success' ? 'rgba(40, 167, 69, 0.3)' : 'rgba(220, 53, 69, 0.3)'}`,
+              color: message.type === 'success' ? '#28a745' : '#dc3545',
+              fontSize: '14px'
+            }}>
+              {message.text}
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              disabled={loading}
+              style={{ flex: 1 }}
+            >
+              {loading ? 'Creating...' : 'Create IP'}
+            </Button>
+            <Link href="/dashboard">
+              <Button variant="ghost" size="lg">Cancel</Button>
+            </Link>
+          </div>
         </form>
-
-        {message && (
-          <div className={`message message-${message.type}`}>
-            {message.text}
-          </div>
-        )}
-      </div>
+      </Card>
     </>
   )
 }

@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabaseClient'
-import SettingsButton from '../components/SettingsButton'
+import { useTheme } from '../lib/themeContext'
+import Card from '../components/ui/Card'
+import Button from '../components/ui/Button'
+import Input from '../components/ui/Input'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -10,6 +13,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState(null)
   const router = useRouter()
+  const { darkMode, toggleDarkMode } = useTheme()
 
   const handleAuth = async (e) => {
     e.preventDefault()
@@ -26,7 +30,6 @@ export default function Login() {
         setMessage({ type: 'success', text: 'Signup successful! Logging you in...' })
         setEmail('')
         setPassword('')
-        // Auto-login after signup
         setTimeout(() => router.push('/dashboard'), 1000)
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -44,56 +47,121 @@ export default function Login() {
   }
 
   return (
-    <div style={{minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)', position: 'relative'}}>
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'var(--bg-base)',
+      position: 'relative',
+      padding: '20px'
+    }}>
+      {/* Theme Toggle */}
       <div style={{ position: 'absolute', top: '20px', right: '20px' }}>
-        <SettingsButton />
+        <button
+          onClick={toggleDarkMode}
+          style={{
+            padding: '10px 16px',
+            borderRadius: '8px',
+            background: 'var(--bg-surface-elevated)',
+            border: '1px solid var(--border-default)',
+            color: 'var(--text-primary)',
+            cursor: 'pointer',
+            fontSize: '14px',
+            transition: 'all 0.15s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'var(--oak-base)'
+            e.currentTarget.style.borderColor = 'var(--gold-primary)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'var(--bg-surface-elevated)'
+            e.currentTarget.style.borderColor = 'var(--border-default)'
+          }}
+        >
+          {darkMode ? '☀️ Light' : '🌙 Dark'}
+        </button>
       </div>
-      <div className="content-card" style={{width: '100%', maxWidth: '400px'}}>
-        <h1 className="text-center">{isSignUp ? 'Create Account' : 'Login'}</h1>
-        <p className="text-center text-muted">Kinly IP Creation Platform</p>
+
+      <Card style={{ width: '100%', maxWidth: '420px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <div style={{
+            width: '64px',
+            height: '64px',
+            borderRadius: '12px',
+            background: 'linear-gradient(135deg, var(--gold-primary), var(--gold-muted))',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '32px',
+            fontWeight: '700',
+            color: 'var(--bg-base)',
+            margin: '0 auto 20px'
+          }}>
+            K
+          </div>
+          <h1 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>
+            {isSignUp ? 'Create Account' : 'Welcome Back'}
+          </h1>
+          <p style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
+            {isSignUp ? 'Start building your IP portfolio' : 'Sign in to continue'}
+          </p>
+        </div>
 
         <form onSubmit={handleAuth}>
-          <div className="form-group">
-            <label>Email</label>
-            <input 
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              required
-              placeholder="your@email.com"
-            />
-          </div>
-          <div className="form-group">
-            <label>Password</label>
-            <input 
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-              placeholder="••••••••"
-            />
-          </div>
-          <button type="submit" className="btn-primary" disabled={loading} style={{width: '100%'}}>
-            {loading ? 'Loading...' : (isSignUp ? 'Sign Up' : 'Login')}
-          </button>
+          <Input
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="your@email.com"
+            required
+          />
+          <Input
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+            required
+          />
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            disabled={loading}
+            style={{ width: '100%', marginTop: '8px' }}
+          >
+            {loading ? 'Loading...' : (isSignUp ? 'Sign Up' : 'Sign In')}
+          </Button>
         </form>
 
         {message && (
-          <div className={`message message-${message.type}`}>
+          <div style={{
+            marginTop: '20px',
+            padding: '12px 16px',
+            borderRadius: '8px',
+            background: message.type === 'success' ? 'rgba(40, 167, 69, 0.1)' : 'rgba(220, 53, 69, 0.1)',
+            border: `1px solid ${message.type === 'success' ? 'rgba(40, 167, 69, 0.3)' : 'rgba(220, 53, 69, 0.3)'}`,
+            color: message.type === 'success' ? '#28a745' : '#dc3545',
+            fontSize: '14px'
+          }}>
             {message.text}
           </div>
         )}
 
-        <p className="text-center" style={{marginTop: '20px', fontSize: '14px'}}>
-          {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
-          <button 
-            className="btn-secondary"
+        <div style={{ textAlign: 'center', marginTop: '24px', paddingTop: '24px', borderTop: '1px solid var(--border-default)' }}>
+          <p style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+            {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
+          </p>
+          <Button
+            variant="ghost"
             onClick={() => setIsSignUp(!isSignUp)}
           >
-            {isSignUp ? 'Login' : 'Sign Up'}
-          </button>
-        </p>
-      </div>
+            {isSignUp ? 'Sign In Instead' : 'Create Account'}
+          </Button>
+        </div>
+      </Card>
     </div>
   )
 }

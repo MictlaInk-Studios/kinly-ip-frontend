@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../lib/authContext'
-import SettingsButton from '../components/SettingsButton'
+import Card from '../components/ui/Card'
+import Button from '../components/ui/Button'
+import Input from '../components/ui/Input'
+import Link from 'next/link'
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth()
@@ -13,7 +15,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
-  const [viewMode, setViewMode] = useState('grid') // 'grid' or 'list'
+  const [viewMode, setViewMode] = useState('grid')
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -28,7 +30,6 @@ export default function Dashboard() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      // Fetch IPs
       const { data: ipsData, error: ipsError } = await supabase
         .from('ips')
         .select('*')
@@ -36,27 +37,20 @@ export default function Dashboard() {
         .order('created_at', { ascending: false })
 
       if (ipsError) throw ipsError
-
       setIps(ipsData || [])
 
-      // Fetch stats
       if (ipsData && ipsData.length > 0) {
         const ipIds = ipsData.map(ip => ip.id)
-        
-        // Count worlds
         const { count: worldsCount } = await supabase
           .from('worlds')
           .select('*', { count: 'exact', head: true })
           .in('ip_id', ipIds)
           .eq('user_id', user.id)
-
-        // Count content items
         const { count: itemsCount } = await supabase
           .from('content_items')
           .select('*', { count: 'exact', head: true })
           .in('ip_id', ipIds)
           .eq('user_id', user.id)
-
         setStats({
           worlds: worldsCount || 0,
           contentItems: itemsCount || 0
@@ -77,7 +71,7 @@ export default function Dashboard() {
       return
     }
     setIps(ips.filter(ip => ip.id !== id))
-    fetchData() // Refresh stats
+    fetchData()
   }
 
   const filteredIPs = ips.filter(ip => 
@@ -86,294 +80,229 @@ export default function Dashboard() {
     ip.owner.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const recentIPs = [...ips].sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at)).slice(0, 5)
-
-  if (authLoading) return <p>Loading...</p>
+  if (authLoading) return <div style={{ padding: '40px', textAlign: 'center' }}>Loading...</div>
   if (!user) return null
 
   return (
-    <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px' }}>
+    <>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px', paddingTop: '20px' }}>
-        <div>
-          <h1 style={{ marginBottom: '8px', fontSize: '32px', fontWeight: '700' }}>
-            Welcome back{user.email ? `, ${user.email.split('@')[0]}` : ''}!
-          </h1>
-          <p className="text-muted" style={{ fontSize: '16px' }}>
-            Manage and build your intellectual property portfolio
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <SettingsButton />
-          <Link href="/create-ip" style={{ textDecoration: 'none' }}>
-            <button className="btn-primary" style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '600' }}>
-              + Create New IP
-            </button>
-          </Link>
-        </div>
+      <div style={{ marginBottom: '32px' }}>
+        <h1 style={{ marginBottom: '8px', fontSize: '32px', fontWeight: '700' }}>
+          Dashboard
+        </h1>
+        <p style={{ fontSize: '16px', color: 'var(--text-secondary)' }}>
+          Manage and build your intellectual property portfolio
+        </p>
       </div>
 
-      {error && <div className="message message-error" style={{ marginBottom: '24px' }}>{error}</div>}
+      {error && (
+        <Card style={{ marginBottom: '24px', borderColor: '#DC3545' }}>
+          <p style={{ color: '#DC3545', margin: 0 }}>Error: {error}</p>
+        </Card>
+      )}
 
       {loading ? (
         <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-          <p className="text-muted">Loading your dashboard...</p>
+          <p style={{ color: 'var(--text-muted)' }}>Loading your dashboard...</p>
         </div>
       ) : (
         <>
           {/* Stats Cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '32px' }}>
-            <div className="content-card" style={{ maxWidth: '100%', padding: '24px', background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent-hover) 100%)', color: 'white', border: 'none' }}>
+            <Card style={{ background: 'linear-gradient(135deg, var(--gold-primary), var(--gold-muted))', border: 'none' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <h3 style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9, margin: 0 }}>Total IPs</h3>
+                <span style={{ fontSize: '14px', fontWeight: '600', opacity: 0.9, color: 'var(--bg-base)' }}>Total IPs</span>
                 <span style={{ fontSize: '24px' }}>📚</span>
               </div>
-              <div style={{ fontSize: '36px', fontWeight: '700', margin: 0 }}>{ips.length}</div>
-              <p style={{ fontSize: '13px', opacity: 0.8, margin: '8px 0 0 0' }}>Intellectual Properties</p>
-            </div>
+              <div style={{ fontSize: '36px', fontWeight: '700', color: 'var(--bg-base)', margin: 0 }}>{ips.length}</div>
+              <p style={{ fontSize: '13px', opacity: 0.8, margin: '8px 0 0 0', color: 'var(--bg-base)' }}>Intellectual Properties</p>
+            </Card>
 
-            <div className="content-card" style={{ maxWidth: '100%', padding: '24px' }}>
+            <Card>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <h3 style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-muted)', margin: 0 }}>Worlds</h3>
+                <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-muted)' }}>Worlds</span>
                 <span style={{ fontSize: '24px' }}>🌍</span>
               </div>
               <div style={{ fontSize: '36px', fontWeight: '700', color: 'var(--text-primary)', margin: 0 }}>{stats.worlds}</div>
-              <p className="text-muted" style={{ fontSize: '13px', margin: '8px 0 0 0' }}>Worlds Created</p>
-            </div>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '8px 0 0 0' }}>Worlds Created</p>
+            </Card>
 
-            <div className="content-card" style={{ maxWidth: '100%', padding: '24px' }}>
+            <Card>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <h3 style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-muted)', margin: 0 }}>Content Items</h3>
+                <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-muted)' }}>Content Items</span>
                 <span style={{ fontSize: '24px' }}>📝</span>
               </div>
               <div style={{ fontSize: '36px', fontWeight: '700', color: 'var(--text-primary)', margin: 0 }}>{stats.contentItems}</div>
-              <p className="text-muted" style={{ fontSize: '13px', margin: '8px 0 0 0' }}>Total Entries</p>
-            </div>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '8px 0 0 0' }}>Total Entries</p>
+            </Card>
 
-            <div className="content-card" style={{ maxWidth: '100%', padding: '24px' }}>
+            <Card>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <h3 style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-muted)', margin: 0 }}>Avg. Items/IP</h3>
+                <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-muted)' }}>Avg. Items/IP</span>
                 <span style={{ fontSize: '24px' }}>📊</span>
               </div>
               <div style={{ fontSize: '36px', fontWeight: '700', color: 'var(--text-primary)', margin: 0 }}>
                 {ips.length > 0 ? Math.round(stats.contentItems / ips.length) : 0}
               </div>
-              <p className="text-muted" style={{ fontSize: '13px', margin: '8px 0 0 0' }}>Content per IP</p>
-            </div>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '8px 0 0 0' }}>Content per IP</p>
+            </Card>
           </div>
 
-          {/* Search and View Toggle */}
+          {/* Search and Actions */}
           {ips.length > 0 && (
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', gap: '16px' }}>
               <div style={{ flex: 1, maxWidth: '500px', position: 'relative' }}>
                 <input
                   type="text"
-                  placeholder="Search IPs by title, description, or owner..."
+                  placeholder="Search IPs..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   style={{
                     width: '100%',
                     padding: '12px 16px 12px 40px',
                     borderRadius: '8px',
-                    border: '1px solid var(--input-border)',
+                    border: '1px solid var(--border-default)',
                     fontSize: '14px',
-                    background: 'var(--input-bg)',
-                    color: 'var(--text-primary)'
+                    background: 'var(--bg-surface)',
+                    color: 'var(--text-primary)',
+                    outline: 'none',
+                    transition: 'all 0.15s ease'
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--gold-primary)'
+                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(201, 162, 77, 0.1)'
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--border-default)'
+                    e.currentTarget.style.boxShadow = 'none'
                   }}
                 />
                 <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '18px' }}>🔍</span>
               </div>
-              <div style={{ display: 'flex', gap: '8px', background: 'var(--bg-tertiary)', padding: '4px', borderRadius: '8px' }}>
-                <button
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <Button
+                  variant={viewMode === 'grid' ? 'primary' : 'ghost'}
+                  size="sm"
                   onClick={() => setViewMode('grid')}
-                  style={{
-                    padding: '8px 16px',
-                    borderRadius: '6px',
-                    border: 'none',
-                    background: viewMode === 'grid' ? 'var(--accent)' : 'transparent',
-                    color: viewMode === 'grid' ? 'white' : 'var(--text-primary)',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: '500'
-                  }}
                 >
                   Grid
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'primary' : 'ghost'}
+                  size="sm"
                   onClick={() => setViewMode('list')}
-                  style={{
-                    padding: '8px 16px',
-                    borderRadius: '6px',
-                    border: 'none',
-                    background: viewMode === 'list' ? 'var(--accent)' : 'transparent',
-                    color: viewMode === 'list' ? 'white' : 'var(--text-primary)',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: '500'
-                  }}
                 >
                   List
-                </button>
+                </Button>
+                <Link href="/create-ip">
+                  <Button variant="primary">+ Create IP</Button>
+                </Link>
               </div>
             </div>
           )}
 
           {/* Empty State */}
           {!loading && ips.length === 0 && (
-            <div className="content-card" style={{ textAlign: 'center', padding: '60px 40px', maxWidth: '100%' }}>
+            <Card style={{ textAlign: 'center', padding: '60px 40px' }}>
               <div style={{ fontSize: '64px', marginBottom: '20px' }}>🚀</div>
               <h2 style={{ fontSize: '24px', marginBottom: '12px', fontWeight: '600' }}>Start Building Your IP Portfolio</h2>
-              <p className="text-muted" style={{ fontSize: '16px', marginBottom: '32px', maxWidth: '500px', margin: '0 auto 32px' }}>
+              <p style={{ fontSize: '16px', color: 'var(--text-secondary)', marginBottom: '32px', maxWidth: '500px', margin: '0 auto 32px' }}>
                 Create your first intellectual property and start building worlds, characters, and stories.
               </p>
               <Link href="/create-ip">
-                <button className="btn-primary" style={{ padding: '14px 32px', fontSize: '16px', fontWeight: '600' }}>
-                  Create Your First IP
-                </button>
+                <Button variant="primary" size="lg">Create Your First IP</Button>
               </Link>
-            </div>
+            </Card>
           )}
 
-          {/* IP Cards Grid */}
+          {/* IP Grid */}
           {!loading && filteredIPs.length > 0 && viewMode === 'grid' && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px', marginBottom: '32px' }}>
               {filteredIPs.map(ip => (
-                <div
-                  key={ip.id}
-                  className="content-card"
-                  style={{
-                    maxWidth: '100%',
-                    padding: '24px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    position: 'relative'
-                  }}
-                  onClick={() => router.push(`/builder/${ip.id}`)}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-4px)'
-                    e.currentTarget.style.boxShadow = '0 8px 16px var(--shadow)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = '0 1px 3px var(--shadow)'
-                  }}
-                >
+                <Card key={ip.id} hover onClick={() => router.push(`/builder/${ip.id}`)}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
                     <h3 style={{ fontSize: '20px', fontWeight: '700', margin: 0, flex: 1 }}>{ip.title}</h3>
-                    <button
-                      className="btn-danger"
+                    <Button
+                      variant="danger"
+                      size="sm"
                       onClick={(e) => {
                         e.stopPropagation()
                         deleteIP(ip.id)
                       }}
-                      style={{ fontSize: '11px', padding: '4px 8px' }}
                     >
                       Delete
-                    </button>
+                    </Button>
                   </div>
-                  <p className="text-muted" style={{ fontSize: '13px', marginBottom: '12px' }}>
+                  <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '12px' }}>
                     Owner: <strong style={{ color: 'var(--text-primary)' }}>{ip.owner}</strong>
                   </p>
                   <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '16px', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                     {ip.description || 'No description provided'}
                   </p>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
-                    <span className="text-muted" style={{ fontSize: '12px' }}>
-                      Created {new Date(ip.created_at).toLocaleDateString()}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '16px', borderTop: '1px solid var(--border-default)' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                      {new Date(ip.created_at).toLocaleDateString()}
                     </span>
-                    <span style={{ fontSize: '14px', color: 'var(--accent)', fontWeight: '600' }}>Open →</span>
+                    <span style={{ fontSize: '14px', color: 'var(--gold-primary)', fontWeight: '600' }}>Open →</span>
                   </div>
-                </div>
+                </Card>
               ))}
             </div>
           )}
 
-          {/* IP List View */}
+          {/* IP List */}
           {!loading && filteredIPs.length > 0 && viewMode === 'list' && (
-            <div className="content-card" style={{ maxWidth: '100%', padding: 0, overflow: 'hidden' }}>
-              <table style={{ margin: 0 }}>
+            <Card style={{ padding: 0, overflow: 'hidden' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr>
-                    <th>Title</th>
-                    <th>Owner</th>
-                    <th>Description</th>
-                    <th>Created</th>
-                    <th style={{ textAlign: 'center', width: '100px' }}>Actions</th>
+                  <tr style={{ background: 'var(--bg-surface)', borderBottom: '1px solid var(--border-default)' }}>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Title</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Owner</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Description</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '13px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Created</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '13px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', width: '100px' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredIPs.map(ip => (
-                    <tr key={ip.id} style={{ cursor: 'pointer' }} onClick={() => router.push(`/builder/${ip.id}`)}>
-                      <td><strong>{ip.title}</strong></td>
-                      <td>{ip.owner}</td>
-                      <td style={{ maxWidth: '300px' }}>{ip.description?.substring(0, 60)}{ip.description?.length > 60 ? '...' : ''}</td>
-                      <td>{new Date(ip.created_at).toLocaleDateString()}</td>
-                      <td style={{ textAlign: 'center' }}>
-                        <button
-                          className="btn-danger"
+                    <tr
+                      key={ip.id}
+                      style={{ cursor: 'pointer', borderBottom: '1px solid var(--border-default)', transition: 'background 0.15s ease' }}
+                      onClick={() => router.push(`/builder/${ip.id}`)}
+                      onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-surface)'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                    >
+                      <td style={{ padding: '12px 16px' }}><strong>{ip.title}</strong></td>
+                      <td style={{ padding: '12px 16px' }}>{ip.owner}</td>
+                      <td style={{ padding: '12px 16px', maxWidth: '300px' }}>{ip.description?.substring(0, 60)}{ip.description?.length > 60 ? '...' : ''}</td>
+                      <td style={{ padding: '12px 16px' }}>{new Date(ip.created_at).toLocaleDateString()}</td>
+                      <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                        <Button
+                          variant="danger"
+                          size="sm"
                           onClick={(e) => {
                             e.stopPropagation()
                             deleteIP(ip.id)
                           }}
-                          style={{ fontSize: '12px', padding: '6px 12px' }}
                         >
                           Delete
-                        </button>
+                        </Button>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
+            </Card>
           )}
 
           {/* No Results */}
           {!loading && searchQuery && filteredIPs.length === 0 && (
-            <div className="content-card" style={{ textAlign: 'center', padding: '40px', maxWidth: '100%' }}>
-              <p className="text-muted">No IPs found matching "{searchQuery}"</p>
-            </div>
-          )}
-
-          {/* Recent Activity Section */}
-          {!loading && recentIPs.length > 0 && (
-            <div style={{ marginTop: '48px' }}>
-              <h2 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '20px' }}>Recent Activity</h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {recentIPs.map(ip => (
-                  <div
-                    key={ip.id}
-                    className="content-card"
-                    style={{
-                      maxWidth: '100%',
-                      padding: '16px 20px',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center'
-                    }}
-                    onClick={() => router.push(`/builder/${ip.id}`)}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'var(--bg-tertiary)'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'var(--bg-secondary)'
-                    }}
-                  >
-                    <div style={{ flex: 1 }}>
-                      <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>{ip.title}</h4>
-                      <p className="text-muted" style={{ fontSize: '13px', margin: 0 }}>
-                        Last updated {new Date(ip.updated_at || ip.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <span style={{ fontSize: '20px', color: 'var(--accent)' }}>→</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <Card style={{ textAlign: 'center', padding: '40px' }}>
+              <p style={{ color: 'var(--text-muted)' }}>No IPs found matching "{searchQuery}"</p>
+            </Card>
           )}
         </>
       )}
-    </div>
+    </>
   )
 }

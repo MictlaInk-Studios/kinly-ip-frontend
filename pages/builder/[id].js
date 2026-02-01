@@ -3,7 +3,10 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { supabase } from '../../lib/supabaseClient'
 import { useAuth } from '../../lib/authContext'
-import SettingsButton from '../../components/SettingsButton'
+import Card from '../../components/ui/Card'
+import Button from '../../components/ui/Button'
+import Input from '../../components/ui/Input'
+import Textarea from '../../components/ui/Textarea'
 
 export default function IPBuilder() {
   const router = useRouter()
@@ -255,7 +258,6 @@ export default function IPBuilder() {
     setWorlds(data || [])
     if (data && data.length > 0) {
       setSelectedWorld(data[0])
-      // auto-open the first section for usability (for non-technical users)
       if (!selectedSection) {
         const firstCategory = Object.keys(SECTION_CATEGORIES)[0]
         const firstSection = SECTION_CATEGORIES[firstCategory][0]
@@ -264,7 +266,6 @@ export default function IPBuilder() {
     }
   }
 
-  // when the selected world changes (eg user selects a different world), auto-open the first section
   useEffect(() => {
     if (selectedWorld && !selectedSection) {
       const firstCategory = Object.keys(SECTION_CATEGORIES)[0]
@@ -321,12 +322,10 @@ export default function IPBuilder() {
     }
   }
 
-  // Content items: fetch/create/delete per section
   const fetchItems = async (section) => {
     if (!selectedWorld || !section) return
     setItemsLoading(true)
     setItemsError(null)
-    console.log('fetchItems', { section, worldId: selectedWorld?.id })
     const { data, error: err } = await supabase
       .from('content_items')
       .select('*')
@@ -398,166 +397,156 @@ export default function IPBuilder() {
   }
 
   const handleSelectSection = (section) => {
-    console.log('section clicked', section)
     setSelectedSection(section)
   }
 
-  if (authLoading) return <p>Loading...</p>
+  if (authLoading) return <div style={{ padding: '40px', textAlign: 'center' }}>Loading...</div>
   if (!user) return null
-  if (loading) return <p>Loading IP...</p>
-  if (error) return <p className="message message-error">Error: {error}</p>
-  if (!ip) return <p>IP not found</p>
+  if (loading) return <div style={{ padding: '40px', textAlign: 'center' }}>Loading IP...</div>
+  if (error) return <Card style={{ borderColor: '#DC3545' }}><p style={{ color: '#DC3545', margin: 0 }}>Error: {error}</p></Card>
+  if (!ip) return <Card><p>IP not found</p></Card>
 
   return (
-    <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', paddingTop: '20px' }}>
-        <div>
-          <h1 style={{ marginBottom: '8px' }}>{ip.title}</h1>
-          <p className="text-muted" style={{ fontSize: '15px' }}>IP Builder & World Creator</p>
-        </div>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <SettingsButton />
-          <Link href="/dashboard" style={{ textDecoration: 'none' }}>
-            <button className="btn-secondary" style={{ padding: '10px 20px', borderRadius: '6px' }}>
-              ← Back to Dashboard
-            </button>
+    <>
+      {/* Header */}
+      <div style={{ marginBottom: '32px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <h1 style={{ fontSize: '32px', fontWeight: '700', margin: 0 }}>{ip.title}</h1>
+          <Link href="/dashboard">
+            <Button variant="ghost">← Back to Dashboard</Button>
           </Link>
         </div>
+        <p style={{ fontSize: '16px', color: 'var(--text-secondary)' }}>IP Builder & World Creator</p>
       </div>
 
+      {/* IP Details and World Builder */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
         {/* IP Details Card */}
-        <div className="content-card" style={{ maxWidth: '100%', padding: '24px' }}>
-          <h2 style={{ marginBottom: '20px', fontSize: '22px', fontWeight: '700' }}>IP Details</h2>
+        <Card>
+          <h2 style={{ marginBottom: '24px', fontSize: '20px', fontWeight: '700' }}>IP Details</h2>
           {!editing ? (
             <>
               <div style={{ marginBottom: '20px' }}>
-                <p className="text-muted" style={{ marginBottom: '6px', fontSize: '13px', fontWeight: '500' }}>Title</p>
-                <p style={{ fontSize: '17px', fontWeight: '600', color: '#1a1a1a', margin: 0 }}>{ip.title}</p>
+                <p style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '8px' }}>Title</p>
+                <p style={{ fontSize: '17px', fontWeight: '600', color: 'var(--text-primary)', margin: 0 }}>{ip.title}</p>
               </div>
               <div style={{ marginBottom: '20px' }}>
-                <p className="text-muted" style={{ marginBottom: '6px', fontSize: '13px', fontWeight: '500' }}>Owner</p>
-                <p style={{ fontSize: '15px', color: '#495057', margin: 0 }}>{ip.owner}</p>
+                <p style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '8px' }}>Owner</p>
+                <p style={{ fontSize: '15px', color: 'var(--text-secondary)', margin: 0 }}>{ip.owner}</p>
               </div>
               <div style={{ marginBottom: '20px' }}>
-                <p className="text-muted" style={{ marginBottom: '6px', fontSize: '13px', fontWeight: '500' }}>Description</p>
-                <p style={{ fontSize: '14px', color: '#495057', lineHeight: '1.6', margin: 0, whiteSpace: 'pre-wrap' }}>{ip.description}</p>
+                <p style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '8px' }}>Description</p>
+                <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: '1.6', margin: 0, whiteSpace: 'pre-wrap' }}>{ip.description}</p>
               </div>
-              <div style={{ marginBottom: '24px', paddingBottom: '20px', borderBottom: '1px solid #e9ecef' }}>
-                <p className="text-muted" style={{ marginBottom: '6px', fontSize: '13px', fontWeight: '500' }}>Created</p>
-                <p style={{ fontSize: '14px', color: '#868e96', margin: 0 }}>{new Date(ip.created_at).toLocaleDateString()}</p>
+              <div style={{ marginBottom: '24px', paddingBottom: '20px', borderBottom: '1px solid var(--border-default)' }}>
+                <p style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '8px' }}>Created</p>
+                <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: 0 }}>{new Date(ip.created_at).toLocaleDateString()}</p>
               </div>
-              <button className="btn-primary" onClick={() => setEditing(true)} style={{ padding: '10px 20px', fontSize: '14px', fontWeight: '600' }}>
-                Edit IP
-              </button>
+              <Button variant="primary" onClick={() => setEditing(true)}>Edit IP</Button>
             </>
           ) : (
-            <>
-              <form onSubmit={e => { e.preventDefault(); handleSaveIP() }}>
-                <div className="form-group">
-                  <label>Title</label>
-                  <input
-                    type="text"
-                    value={formData.title}
-                    onChange={e => setFormData({ ...formData, title: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Owner</label>
-                  <input
-                    type="text"
-                    value={formData.owner}
-                    onChange={e => setFormData({ ...formData, owner: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Description</label>
-                  <textarea
-                    value={formData.description}
-                    onChange={e => setFormData({ ...formData, description: e.target.value })}
-                    required
-                  />
-                </div>
-                <div style={{ display: 'flex', gap: '10px', marginTop: '8px' }}>
-                  <button type="submit" className="btn-primary" style={{ padding: '10px 20px', fontSize: '14px', fontWeight: '600' }}>Save</button>
-                  <button type="button" className="btn-secondary" onClick={() => setEditing(false)} style={{ padding: '10px 20px', fontSize: '14px', border: '1px solid #ddd', borderRadius: '6px', background: 'white' }}>Cancel</button>
-                </div>
-              </form>
-            </>
+            <form onSubmit={e => { e.preventDefault(); handleSaveIP() }}>
+              <Input
+                label="Title"
+                value={formData.title}
+                onChange={e => setFormData({ ...formData, title: e.target.value })}
+                required
+              />
+              <Input
+                label="Owner"
+                value={formData.owner}
+                onChange={e => setFormData({ ...formData, owner: e.target.value })}
+                required
+              />
+              <Textarea
+                label="Description"
+                value={formData.description}
+                onChange={e => setFormData({ ...formData, description: e.target.value })}
+                required
+                rows={4}
+              />
+              <div style={{ display: 'flex', gap: '12px', marginTop: '8px' }}>
+                <Button type="submit" variant="primary">Save</Button>
+                <Button type="button" variant="ghost" onClick={() => setEditing(false)}>Cancel</Button>
+              </div>
+            </form>
           )}
-        </div>
+        </Card>
 
         {/* World Builder */}
-        <div className="content-card" style={{ maxWidth: '100%', padding: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <h2 style={{ margin: 0, fontSize: '22px', fontWeight: '700' }}>🌍 World Builder</h2>
-            {worlds.length > 0 ? (
-              <button 
-                className="btn-primary" 
-                onClick={() => setCreatingWorld(true)}
-                style={{ fontSize: '14px', padding: '10px 20px', fontWeight: '600' }}
-              >
-                Add New World
-              </button>
-            ) : (
-              <button 
-                className="btn-primary" 
-                onClick={() => setCreatingWorld(true)}
-                style={{ fontSize: '14px', padding: '10px 20px', fontWeight: '600' }}
-              >
-                Create New World
-              </button>
-            )}
+        <Card>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+            <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '700' }}>🌍 World Builder</h2>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setCreatingWorld(true)}
+            >
+              {worlds.length > 0 ? 'Add New World' : 'Create New World'}
+            </Button>
           </div>
 
           {creatingWorld && (
-            <div style={{ marginBottom: '20px', padding: '20px', background: '#f8f9fa', borderRadius: '8px', border: '1px solid #e9ecef' }}>
-              <div className="form-group" style={{ marginBottom: '16px' }}>
-                <label style={{ marginBottom: '8px' }}>World Name</label>
-                <input
-                  type="text"
-                  value={worldName}
-                  onChange={e => setWorldName(e.target.value)}
-                  placeholder="Enter world name"
-                  style={{ width: '100%', padding: '10px 12px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px' }}
-                />
-              </div>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button 
-                  className="btn-primary" 
+            <Card style={{ marginBottom: '20px', background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}>
+              <Input
+                label="World Name"
+                value={worldName}
+                onChange={e => setWorldName(e.target.value)}
+                placeholder="Enter world name"
+              />
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <Button
+                  variant="primary"
                   onClick={handleCreateWorld}
                   disabled={!worldName.trim()}
-                  style={{ padding: '10px 20px', fontSize: '14px', fontWeight: '600' }}
                 >
                   Create
-                </button>
-                <button 
-                  className="btn-secondary" 
+                </Button>
+                <Button
+                  variant="ghost"
                   onClick={() => {
                     setCreatingWorld(false)
                     setWorldName('')
                   }}
-                  style={{ padding: '10px 20px', fontSize: '14px', border: '1px solid #ddd', borderRadius: '6px', background: 'white' }}
                 >
                   Cancel
-                </button>
+                </Button>
               </div>
-            </div>
+            </Card>
           )}
 
           {worlds.length > 0 && (
             <>
-              <div className="form-group" style={{ marginBottom: '16px' }}>
-                <label style={{ marginBottom: '8px', display: 'block' }}>Select World</label>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '8px' }}>
+                  Select World
+                </label>
                 <select
                   value={selectedWorld?.id || ''}
                   onChange={e => {
                     const world = worlds.find(w => w.id === e.target.value)
                     setSelectedWorld(world)
                   }}
-                  style={{ width: '100%', padding: '10px 12px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px', background: 'white', cursor: 'pointer' }}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-default)',
+                    fontSize: '14px',
+                    background: 'var(--bg-surface)',
+                    color: 'var(--text-primary)',
+                    cursor: 'pointer',
+                    outline: 'none',
+                    transition: 'all 0.15s ease'
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--gold-primary)'
+                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(201, 162, 77, 0.1)'
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = 'var(--border-default)'
+                    e.currentTarget.style.boxShadow = 'none'
+                  }}
                 >
                   {worlds.map(world => (
                     <option key={world.id} value={world.id}>
@@ -566,54 +555,59 @@ export default function IPBuilder() {
                   ))}
                 </select>
               </div>
-
               {selectedWorld && (
-                <div>
-                  <p className="text-muted" style={{ marginBottom: '15px' }}>
-                    Selected: <strong>{selectedWorld.name}</strong>
-                  </p>
-                </div>
+                <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: 0 }}>
+                  Selected: <strong style={{ color: 'var(--text-primary)' }}>{selectedWorld.name}</strong>
+                </p>
               )}
             </>
           )}
 
           {worlds.length === 0 && !creatingWorld && (
-            <p className="text-muted">No worlds created yet. Click "Create New World" to get started.</p>
+            <p style={{ fontSize: '14px', color: 'var(--text-muted)' }}>No worlds created yet. Click "Create New World" to get started.</p>
           )}
-        </div>
+        </Card>
       </div>
 
-      {/* Content Editor Card - Only show when a world is selected */}
+      {/* Content Editor Card */}
       {selectedWorld && (
-        <div className="content-card" style={{ maxWidth: '100%', padding: '28px', marginBottom: '24px' }}>
-          <div style={{ marginBottom: '24px', paddingBottom: '16px', borderBottom: '2px solid #e9ecef' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <div>
-                <h2 style={{ marginBottom: '8px', fontSize: '24px', fontWeight: '700' }}>
-                  {selectedSection || 'Select a Section'}
-                </h2>
-                <p className="text-muted" style={{ fontSize: '14px', margin: 0 }}>
-                  Building: <strong style={{ color: 'var(--accent)' }}>{selectedWorld.name}</strong>
-                </p>
-              </div>
+        <Card style={{ marginBottom: '24px' }}>
+          <div style={{ marginBottom: '24px', paddingBottom: '20px', borderBottom: '2px solid var(--border-default)' }}>
+            <div style={{ marginBottom: '16px' }}>
+              <h2 style={{ marginBottom: '8px', fontSize: '24px', fontWeight: '700' }}>
+                {selectedSection || 'Select a Section'}
+              </h2>
+              <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: 0 }}>
+                Building: <strong style={{ color: 'var(--gold-primary)' }}>{selectedWorld.name}</strong>
+              </p>
             </div>
 
-            {/* Section Dropdown */}
-            <div className="form-group" style={{ marginBottom: '0' }}>
-              <label style={{ marginBottom: '8px', display: 'block', fontSize: '14px', fontWeight: '600' }}>Content Section</label>
+            <div>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '8px' }}>
+                Content Section
+              </label>
               <select
                 value={selectedSection || ''}
                 onChange={e => handleSelectSection(e.target.value)}
                 style={{
                   width: '100%',
                   padding: '12px 16px',
-                  borderRadius: '6px',
-                  border: '1px solid var(--input-border)',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-default)',
                   fontSize: '14px',
-                  background: 'var(--input-bg)',
+                  background: 'var(--bg-surface)',
                   color: 'var(--text-primary)',
                   cursor: 'pointer',
-                  fontWeight: '500'
+                  outline: 'none',
+                  transition: 'all 0.15s ease'
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--gold-primary)'
+                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(201, 162, 77, 0.1)'
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--border-default)'
+                  e.currentTarget.style.boxShadow = 'none'
                 }}
               >
                 <option value="">-- Select a section to edit --</option>
@@ -630,93 +624,79 @@ export default function IPBuilder() {
             </div>
           </div>
 
-          {/* Create New Item Form - Only show when section is selected */}
+          {/* Create New Item Form */}
           {selectedSection && (
             <>
-              <div style={{ marginBottom: '32px', padding: '24px', background: 'var(--bg-tertiary)', borderRadius: '8px', border: '1px solid var(--border-light)' }}>
+              <Card style={{ marginBottom: '32px', background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}>
                 <h4 style={{ marginBottom: '20px', fontSize: '18px', fontWeight: '600' }}>Add New {selectedSection} Item</h4>
-            <div className="form-group" style={{ marginBottom: '16px' }}>
-              <label style={{ marginBottom: '8px', display: 'block' }}>Title</label>
-              <input
-                type="text"
-                value={newItemTitle}
-                onChange={e => setNewItemTitle(e.target.value)}
-                placeholder={`Enter ${selectedSection.toLowerCase()} title`}
-                style={{ width: '100%', padding: '10px 12px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px' }}
-              />
-            </div>
-            <div className="form-group" style={{ marginBottom: '20px' }}>
-              <label style={{ marginBottom: '8px', display: 'block' }}>Content</label>
-              <textarea
-                value={newItemBody}
-                onChange={e => setNewItemBody(e.target.value)}
-                placeholder={`Enter ${selectedSection.toLowerCase()} content`}
-                rows={6}
-                style={{ width: '100%', padding: '10px 12px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '14px', fontFamily: 'inherit', resize: 'vertical' }}
-              />
-            </div>
-            <button 
-              className="btn-primary" 
-              onClick={handleCreateItem}
-              disabled={!newItemTitle.trim()}
-              style={{ padding: '12px 24px', fontSize: '14px', fontWeight: '600' }}
-            >
-              Add Item
-            </button>
-          </div>
+                <Input
+                  label="Title"
+                  value={newItemTitle}
+                  onChange={e => setNewItemTitle(e.target.value)}
+                  placeholder={`Enter ${selectedSection.toLowerCase()} title`}
+                />
+                <Textarea
+                  label="Content"
+                  value={newItemBody}
+                  onChange={e => setNewItemBody(e.target.value)}
+                  placeholder={`Enter ${selectedSection.toLowerCase()} content`}
+                  rows={6}
+                />
+                <Button
+                  variant="primary"
+                  onClick={handleCreateItem}
+                  disabled={!newItemTitle.trim()}
+                >
+                  Add Item
+                </Button>
+              </Card>
 
-          {/* Items List */}
-          {itemsLoading ? (
-            <p>Loading items...</p>
-          ) : itemsError ? (
-            <p className="message message-error">Error: {itemsError}</p>
-          ) : items.length === 0 ? (
-            <div style={{ padding: '40px', textAlign: 'center', background: '#f8f9fa', borderRadius: '8px', border: '1px dashed #dee2e6' }}>
-              <p className="text-muted" style={{ fontSize: '14px', margin: 0 }}>No {selectedSection.toLowerCase()} items yet. Create one above.</p>
-            </div>
-          ) : (
-            <div>
-              <h4 style={{ marginBottom: '20px', fontSize: '18px', fontWeight: '600' }}>Existing Items ({items.length})</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {items.map(item => (
-                  <div 
-                    key={item.id} 
-                    style={{ 
-                      padding: '20px', 
-                      background: 'white', 
-                      border: '1px solid #e9ecef', 
-                      borderRadius: '8px',
-                      boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-                      transition: 'box-shadow 0.2s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)'}
-                    onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)'}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '12px' }}>
-                      <h5 style={{ margin: 0, fontSize: '17px', fontWeight: '600', color: '#1a1a1a' }}>{item.title}</h5>
-                      <button
-                        className="btn-danger"
-                        onClick={() => handleDeleteItem(item.id)}
-                        style={{ fontSize: '12px', padding: '6px 12px', borderRadius: '4px' }}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                    {item.body && (
-                      <p style={{ margin: '0 0 12px 0', color: '#495057', whiteSpace: 'pre-wrap', lineHeight: '1.6', fontSize: '14px' }}>{item.body}</p>
-                    )}
-                    <p className="text-muted" style={{ margin: 0, fontSize: '12px', color: '#868e96' }}>
-                      Created: {new Date(item.created_at).toLocaleDateString()}
-                    </p>
+              {/* Items List */}
+              {itemsLoading ? (
+                <p style={{ color: 'var(--text-muted)' }}>Loading items...</p>
+              ) : itemsError ? (
+                <Card style={{ borderColor: '#DC3545' }}>
+                  <p style={{ color: '#DC3545', margin: 0 }}>Error: {itemsError}</p>
+                </Card>
+              ) : items.length === 0 ? (
+                <Card style={{ textAlign: 'center', padding: '40px', background: 'var(--bg-surface)', border: '1px dashed var(--border-default)' }}>
+                  <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: 0 }}>
+                    No {selectedSection.toLowerCase()} items yet. Create one above.
+                  </p>
+                </Card>
+              ) : (
+                <div>
+                  <h4 style={{ marginBottom: '20px', fontSize: '18px', fontWeight: '600' }}>Existing Items ({items.length})</h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {items.map(item => (
+                      <Card key={item.id} style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '12px' }}>
+                          <h5 style={{ margin: 0, fontSize: '17px', fontWeight: '600', color: 'var(--text-primary)' }}>{item.title}</h5>
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => handleDeleteItem(item.id)}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                        {item.body && (
+                          <p style={{ margin: '0 0 12px 0', color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', lineHeight: '1.6', fontSize: '14px' }}>
+                            {item.body}
+                          </p>
+                        )}
+                        <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)' }}>
+                          Created: {new Date(item.created_at).toLocaleDateString()}
+                        </p>
+                      </Card>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                </div>
+              )}
             </>
           )}
-        </div>
+        </Card>
       )}
-    </div>
+    </>
   )
 }
