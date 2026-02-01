@@ -396,24 +396,32 @@ a:hover {
   border: 1px solid var(--border-color);
   border-radius: 8px;
   box-shadow: 0 4px 12px var(--shadow);
-  padding: 12px;
-  min-width: 200px;
+  padding: 8px 0;
+  min-width: 280px;
+  max-width: 320px;
   z-index: 1000;
   transition: all 0.3s ease;
+  max-height: 80vh;
+  overflow-y: auto;
 }
 
 .settings-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 12px;
-  border-radius: 6px;
+  padding: 10px 16px;
+  border-radius: 0;
   cursor: pointer;
   transition: background-color 0.2s;
   color: var(--text-primary);
+  text-decoration: none;
 }
 
 .settings-item:hover {
+  background: var(--bg-tertiary);
+}
+
+.settings-item:active {
   background: var(--bg-tertiary);
 }
 
