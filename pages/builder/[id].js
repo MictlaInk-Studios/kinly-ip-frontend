@@ -10,7 +10,188 @@ export default function IPBuilder() {
   const { user, loading: authLoading } = useAuth()
   const [ip, setIp] = useState(null)
   const [worlds, setWorlds] = useState([])
-  const SECTIONS = ['Characters', 'Locations', 'Plot', 'Lore', 'Timeline', 'Media']
+  const SECTION_CATEGORIES = {
+    '🌍 WORLD FOUNDATION': [
+      'World / Universe Overview',
+      'Genre & Tone',
+      'Themes & Motifs',
+      'Inspiration & Influences',
+      'Rules of Reality (what can / can\'t exist)',
+      'Physics & Cosmology',
+      'Technology Level(s)',
+      'Magic / Power Saturation',
+      'Narrative Perspective (mythic, grounded, epic, etc.)'
+    ],
+    '🗺️ GEOGRAPHY & LOCATIONS': [
+      'Continents / Star Systems / Realms',
+      'Regions & Territories',
+      'Cities & Settlements',
+      'Wilderness Areas',
+      'Landmarks & Wonders',
+      'Planets / Moons / Dimensions',
+      'Hidden or Lost Locations',
+      'Political Borders',
+      'Climate Zones & Biomes'
+    ],
+    '⏳ HISTORY & TIMELINE': [
+      'Creation Myths / Origin Events',
+      'Historical Eras',
+      'Major Wars & Conflicts',
+      'Rise & Fall of Civilizations',
+      'Legendary Events',
+      'Cataclysms & World-Changing Moments',
+      'Recent History (current era)',
+      'Future Prophecies / Destinies'
+    ],
+    '🧬 SPECIES, RACES & BEINGS': [
+      'Sentient Species / Races',
+      'Non-Sentient Creatures',
+      'Gods / Higher Beings',
+      'Spirits / Demons / Angels',
+      'Artificial Life (AI, constructs, clones)',
+      'Hybrids & Mutations',
+      'Extinct Species',
+      'Cultural Variations per Species'
+    ],
+    '🧑‍🤝‍🧑 CHARACTERS': [
+      'Major Characters',
+      'Minor Characters',
+      'Antagonists',
+      'Protagonists',
+      'Factions Leaders',
+      'Bloodlines & Lineages',
+      'Relationships & Alliances',
+      'Character Arcs',
+      'Deaths & Legacy'
+    ],
+    '🏛️ FACTIONS & ORGANIZATIONS': [
+      'Kingdoms / Empires',
+      'Governments & Political Bodies',
+      'Religious Orders',
+      'Guilds & Societies',
+      'Military Forces',
+      'Criminal Organizations',
+      'Corporations / Megacorps',
+      'Rebel Groups',
+      'Secret Orders'
+    ],
+    '⚔️ CONFLICTS & POWER DYNAMICS': [
+      'Ongoing Conflicts',
+      'Political Tensions',
+      'Religious Schisms',
+      'Resource Wars',
+      'Ideological Divides',
+      'Prophecies & Chosen Ones',
+      'Power Vacuums',
+      'Internal Conflicts'
+    ],
+    '✨ MAGIC, POWERS & SYSTEMS': [
+      'Magic System(s)',
+      'Power Sources',
+      'Costs & Limitations',
+      'Schools / Disciplines',
+      'Rituals & Practices',
+      'Forbidden Powers',
+      'Technology vs Magic',
+      'Training & Mastery',
+      'Unique Abilities'
+    ],
+    '🧪 TECHNOLOGY & SCIENCE': [
+      'Weapons & Armor',
+      'Transportation',
+      'Communication Systems',
+      'Energy Sources',
+      'Medical Technology',
+      'Cybernetics / Enhancements',
+      'Starships / Vehicles',
+      'Ancient vs Modern Tech'
+    ],
+    '🧠 CULTURE & SOCIETY': [
+      'Social Structure',
+      'Class Systems',
+      'Gender Roles',
+      'Family & Kinship',
+      'Daily Life',
+      'Customs & Traditions',
+      'Festivals & Holidays',
+      'Etiquette & Taboos',
+      'Art, Music & Literature'
+    ],
+    '🗣️ LANGUAGES & COMMUNICATION': [
+      'Spoken Languages',
+      'Written Scripts',
+      'Symbols & Glyphs',
+      'Slang & Idioms',
+      'Lost / Ancient Languages',
+      'Translation Methods',
+      'Non-Verbal Communication'
+    ],
+    '🙏 RELIGION & PHILOSOPHY': [
+      'Pantheons',
+      'Religions & Faiths',
+      'Creation Beliefs',
+      'Moral Codes',
+      'Heresies',
+      'Cult Practices',
+      'Afterlife Concepts',
+      'Divine Intervention'
+    ],
+    '🏺 ITEMS, ARTIFACTS & RELICS': [
+      'Legendary Artifacts',
+      'Common Items',
+      'Magical Objects',
+      'Technology Relics',
+      'Weapons of Legend',
+      'Cursed Items',
+      'Lost Objects',
+      'Symbolic Items'
+    ],
+    '📜 LORE & MYTHOLOGY': [
+      'Myths & Legends',
+      'Folk Tales',
+      'Songs & Poems',
+      'Prophecies',
+      'Historical Accounts',
+      'Cultural Stories',
+      'Misinterpreted Truths'
+    ],
+    '📈 ECONOMY & RESOURCES': [
+      'Currency Systems',
+      'Trade Routes',
+      'Valuable Resources',
+      'Scarcity & Abundance',
+      'Black Markets',
+      'Economic Powers',
+      'Labor Systems'
+    ],
+    '🧭 EXPLORATION & TRAVEL': [
+      'Travel Methods',
+      'Dangerous Routes',
+      'Portals / Hyperlanes',
+      'Navigation Systems',
+      'Explorers & Pioneers',
+      'Uncharted Regions'
+    ],
+    '📖 STORY & NARRATIVE TOOLS': [
+      'Plot Arcs',
+      'Story Hooks',
+      'Campaigns',
+      'Quests / Missions',
+      'Player Knowledge vs World Knowledge',
+      'Canon vs Non-Canon',
+      'Alternate Timelines'
+    ],
+    '🛠️ META / CREATOR TOOLS': [
+      'Canon Status',
+      'Version History',
+      'Notes & Drafts',
+      'Inspirations',
+      'Tags & Cross-References',
+      'Rights & Ownership',
+      'Adaptation Notes (game, book, film)'
+    ]
+  }
+  const [expandedCategories, setExpandedCategories] = useState({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [editing, setEditing] = useState(false)
@@ -75,13 +256,21 @@ export default function IPBuilder() {
     if (data && data.length > 0) {
       setSelectedWorld(data[0])
       // auto-open the first section for usability (for non-technical users)
-      if (!selectedSection) setSelectedSection(SECTIONS[0])
+      if (!selectedSection) {
+        const firstCategory = Object.keys(SECTION_CATEGORIES)[0]
+        const firstSection = SECTION_CATEGORIES[firstCategory][0]
+        setSelectedSection(firstSection)
+      }
     }
   }
 
   // when the selected world changes (eg user selects a different world), auto-open the first section
   useEffect(() => {
-    if (selectedWorld) setSelectedSection(SECTIONS[0])
+    if (selectedWorld && !selectedSection) {
+      const firstCategory = Object.keys(SECTION_CATEGORIES)[0]
+      const firstSection = SECTION_CATEGORIES[firstCategory][0]
+      setSelectedSection(firstSection)
+    }
   }, [selectedWorld])
 
   const handleSaveIP = async () => {
@@ -211,6 +400,13 @@ export default function IPBuilder() {
   const handleSelectSection = (section) => {
     console.log('section clicked', section)
     setSelectedSection(section)
+  }
+
+  const toggleCategory = (category) => {
+    setExpandedCategories(prev => ({
+      ...prev,
+      [category]: !prev[category]
+    }))
   }
 
   if (authLoading) return <p>Loading...</p>
@@ -395,24 +591,55 @@ export default function IPBuilder() {
             Building: <strong>{selectedWorld.name}</strong>
           </p>
 
-          {/* Section Tabs */}
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-            {SECTIONS.map(section => (
-              <button
-                key={section}
-                onClick={() => handleSelectSection(section)}
-                className={selectedSection === section ? 'btn-primary' : 'btn-secondary'}
-                style={{
-                  padding: '10px 20px',
-                  borderRadius: '6px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: selectedSection === section ? '600' : '400'
-                }}
-              >
-                {section}
-              </button>
+          {/* Section Categories with Collapsible Sections */}
+          <div style={{ marginBottom: '30px' }}>
+            {Object.entries(SECTION_CATEGORIES).map(([category, sections]) => (
+              <div key={category} style={{ marginBottom: '15px' }}>
+                <button
+                  onClick={() => toggleCategory(category)}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    background: expandedCategories[category] ? '#e9ecef' : '#f8f9fa',
+                    border: '1px solid #dee2e6',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '8px'
+                  }}
+                >
+                  <span>{category}</span>
+                  <span>{expandedCategories[category] ? '▼' : '▶'}</span>
+                </button>
+                {expandedCategories[category] && (
+                  <div style={{ paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {sections.map(section => (
+                      <button
+                        key={section}
+                        onClick={() => handleSelectSection(section)}
+                        className={selectedSection === section ? 'btn-primary' : 'btn-secondary'}
+                        style={{
+                          padding: '8px 16px',
+                          borderRadius: '4px',
+                          border: 'none',
+                          cursor: 'pointer',
+                          fontSize: '14px',
+                          fontWeight: selectedSection === section ? '600' : '400',
+                          textAlign: 'left',
+                          width: '100%'
+                        }}
+                      >
+                        {section}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             ))}
           </div>
 
