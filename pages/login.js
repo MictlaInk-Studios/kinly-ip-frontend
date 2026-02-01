@@ -27,14 +27,14 @@ export default function Login() {
         setEmail('')
         setPassword('')
         // Auto-login after signup
-        setTimeout(() => router.push('/'), 1000)
+        setTimeout(() => router.push('/dashboard'), 1000)
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password
         })
         if (error) throw error
-        router.push('/')
+        router.push('/dashboard')
       }
     } catch (err) {
       setMessage({ type: 'error', text: err.message })

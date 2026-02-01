@@ -22,7 +22,7 @@ export default function AuthConfirm() {
       
       if (session) {
         setStatus('success')
-        setTimeout(() => router.push('/'), 1500)
+        setTimeout(() => router.push('/dashboard'), 1500)
       } else {
         setError('No session found. Try signing up again.')
         setStatus('error')
